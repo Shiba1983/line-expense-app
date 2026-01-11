@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>✈️ Travel Expense Splitter</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        /* SIMPLE STYLES - NO NEED TO CHANGE */
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f0f2f5;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1, h2 { color: #1890ff; text-align: center; }
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        button {
+            background: #06c755;
+            color: white;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover { opacity: 0.9; }
+        .success { background: #d4edda; color: #155724; padding: 10px; border-radius: 5px; }
+        .error { background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; }
+        .checkbox-group { margin: 10px 0; }
+        .checkbox-group label { display: block; margin: 5px 0; }
+        .loading { text-align: center; padding: 20px; }
+    </style>
+</head>
+<body>
+    <h1>✈️ Travel Expense Splitter</h1>
+    
+    <div class="card">
+        <h2>➕ Add New Expense</h2>
+        
+        <div id="loading" class="loading">Loading...</div>
+        
+        <div id="app" style="display: none;">
+            <!-- Category -->
+            <label>Category:</label>
+            <select id="category">
+                <option value="Food">🍔 Food & Drinks</option>
+                <option value="Transport">🚗 Transportation</option>
+                <option value="Accommodation">🏨 Accommodation</option>
+                <option value="Activities">🎡 Activities</option>
+                <option value="Shopping">🛍️ Shopping</option>
+                <option value="Other">📝 Other</option>
+            </select>
+            
+            <!-- Payment Method -->
+            <label>Payment Method:</label>
+            <select id="payment">
+                <option value="Cash">💵 Cash</option>
+                <option value="Credit Card">💳 Credit Card</option>
+                <option value="Bank Transfer">🏦 Bank Transfer</option>
+                <option value="E-Wallet">📱 E-Wallet</option>
+            </select>
+            
+            <!-- Date -->
+            <label>Date:</label>
+            <input type="date" id="date">
+            
+            <!-- Amount -->
+            <label>Amount:</label>
+            <input type="number" id="amount" placeholder="Enter amount">
+            
+            <!-- Currency -->
+            <label>Currency:</label>
+            <select id="currency"></select>
+            
+            <!-- Paid By -->
+            <label>Paid By:</label>
+            <select id="paidBy"></select>
+            
+            <!-- Participants -->
+            <label>Split Between:</label>
+            <div id="participants" class="checkbox-group"></div>
+            
+            <!-- Submit -->
+            <button onclick="submitExpense()">➕ Add Expense</button>
+            
+            <!-- Messages -->
+            <div id="message"></div>
+            
+            <!-- Google Sheet Link -->
+            <div style="margin-top: 20px; text-align: center;">
+                <button onclick="openGoogleSheet()" style="background: #4285f4;">
+                    📋 Open Google Sheet
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2>📌 How to Use</h2>
+        <ol>
+            <li>Select expense details</li>
+            <li>Choose who paid</li>
+            <li>Select people to split with</li>
+            <li>Click "Add Expense"</li>
+            <li>Check Google Sheet for calculations</li>
+        </ol>
+        <p><small>All calculations happen automatically in Google Sheets</small></p>
+    </div>
+
+    <script>
+        // ========== CONFIGURATION ==========
+        // ⚠️ CHANGE THESE TWO LINES ⚠️
+        const API_URL = 'PASTE_YOUR_WEB_APP_URL_HERE';  // From Step 2.5
+        const LIFF_ID = 'PASTE_YOUR_LIFF_ID_HERE';      // From Step 3.4
+        
+        let participants = [];
+        
+        // ========== INITIALIZE ==========
+        async function init() {
+            try {
+                // Initialize Line
+                await liff.init({ liffId: LIFF_ID });
+                
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                }
+                
+                // Load data from Google Sheets
+                await loadData();
+                
+                // Show app
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+                
+            } catch (error) {
+                showMessage('Error loading app. Please try again.', 'error');
+                console.error('Init error:', error);
+            }
+        }
+        
+        // ========== LOAD DATA ==========
+        async function loadData() {
+            try {
+                // Load participants
+                const participantsRes = await fetch(API_URL + '?action=getParticipants');
+                const participantsData = await participantsRes.json();
+                participants = participantsData.participants || [];
+                
+                // Load currencies
+                const currenciesRes = await fetch(API_URL + '?action=getCurrencies');
+                const currenciesData = await currenciesRes.json();
+                const currencies = currenciesData.currencies || ['THB', 'USD', 'EUR'];
+                
+                // Populate Paid By dropdown
+                const paidBySelect = document.getElementById('paidBy');
+                paidBySelect.innerHTML = '';
+                participants.forEach(person => {
+                    const option = document.createElement('option');
+                    option.value = person;
+                    option.textContent = person;
+                    paidBySelect.appendChild(option);
+                });
+                
+                // Populate Currency dropdown
+                const currencySelect = document.getElementById('currency');
+                currencySelect.innerHTML = '';
+                currencies.forEach(currency => {
+                    const option = document.createElement('option');
+                    option.value = currency;
+                    option.textContent = currency;
+                    currencySelect.appendChild(option);
+                });
+                
+                // Create participant checkboxes
+                const participantsDiv = document.getElementById('participants');
+                participantsDiv.innerHTML = '';
+                participants.forEach(person => {
+                    const label = document.createElement('label');
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.value = person;
+                    checkbox.checked = true;
+                    checkbox.id = 'check_' + person;
+                    label.appendChild(checkbox);
+                    label.appendChild(document.createTextNode(' ' + person));
+                    participantsDiv.appendChild(label);
+                });
+                
+                // Set today's date
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('date').value = today;
+                
+            } catch (error) {
+                showMessage('Cannot connect to Google Sheets. Check API URL.', 'error');
+                console.error('Load error:', error);
+            }
+        }
+        
+        // ========== SUBMIT EXPENSE ==========
+        async function submitExpense() {
+            const category = document.getElementById('category').value;
+            const payment = document.getElementById('payment').value;
+            const date = document.getElementById('date').value;
+            const amount = document.getElementById('amount').value;
+            const currency = document.getElementById('currency').value;
+            const paidBy = document.getElementById('paidBy').value;
+            
+            // Get selected participants
+            const checkboxes = document.querySelectorAll('#participants input[type=checkbox]:checked');
+            const selectedParticipants = Array.from(checkboxes).map(cb => cb.value);
+            
+            // Validation
+            if (!amount || amount <= 0) {
+                showMessage('Please enter a valid amount', 'error');
+                return;
+            }
+            
+            if (selectedParticipants.length === 0) {
+                showMessage('Please select at least one person', 'error');
+                return;
+            }
+            
+            const expenseData = {
+                action: 'saveExpense',
+                category: category,
+                payment: payment,
+                date: date,
+                amount: parseFloat(amount),
+                currency: currency,
+                paidBy: paidBy,
+                participants: selectedParticipants
+            };
+            
+            try {
+                showMessage('Saving...', 'success');
+                
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(expenseData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('✅ Expense added successfully!', 'success');
+                    // Clear amount field
+                    document.getElementById('amount').value = '';
+                } else {
+                    showMessage('Error: ' + (result.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'error');
+                console.error('Submit error:', error);
+            }
+        }
+        
+        // ========== HELPER FUNCTIONS ==========
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = type;
+            messageDiv.style.display = 'block';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        function openGoogleSheet() {
+            // Replace with your Google Sheet URL
+            const sheetUrl = 'https://docs.google.com/spreadsheets/d/' + API_URL.split('/d/')[1]?.split('/')[0] + '/edit';
+            if (liff.isInClient()) {
+                liff.openWindow({ url: sheetUrl, external: true });
+            } else {
+                window.open(sheetUrl, '_blank');
+            }
+        }
+        
+        // ========== START APP ==========
+        // Update configuration
+        document.addEventListener('DOMContentLoaded', function() {
+            // Don't init automatically - we'll do it after updating config
+            console.log('Please update API_URL and LIFF_ID in the script tag above');
+        });
+    </script>
+</body>
+</html>
