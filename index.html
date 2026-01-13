@@ -1,151 +1,367 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>✈️ Expense Splitter - DEBUG</title>
+    <title>✈️ Travel Expense Splitter</title>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        body { font-family: Arial; padding: 20px; max-width: 500px; margin: 0 auto; }
-        .card { background: #f5f5f5; padding: 20px; margin: 10px 0; border-radius: 10px; }
-        input, select, button { width: 100%; padding: 10px; margin: 5px 0; }
-        button { background: #06c755; color: white; border: none; }
-        #debug { background: #333; color: #0f0; padding: 10px; font-family: monospace; }
-        .error { color: red; }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 15px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .input-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        input:focus, select:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(0,0,0,0.2);
+        }
+        .participants-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .participant-checkbox {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .participant-checkbox input {
+            width: auto;
+            margin-right: 10px;
+        }
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            display: none;
+        }
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            display: none;
+        }
+        #loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+        }
     </style>
 </head>
 <body>
-    <h1>💰 Expense Splitter - DEBUG</h1>
+    <h1>✈️ Travel Expense Splitter</h1>
     
-    <div class="card">
-        <h3>Debug Info</h3>
-        <div id="debug">Loading...</div>
+    <div id="loading" class="card">
+        <p>Loading your expense tracker...</p>
     </div>
     
-    <div class="card" id="app" style="display:none;">
-        <h3>➕ Add Expense</h3>
-        
-        <label>Category:</label>
-        <select id="category">
-            <option value="Food">Food</option>
-            <option value="Transport">Transport</option>
-        </select>
-        
-        <label>Description:</label>
-        <input type="text" id="description" placeholder="e.g., Dinner">
-        
-        <label>Amount:</label>
-        <input type="number" id="amount" placeholder="0">
-        
-        <label>Currency:</label>
-        <select id="currency">
-            <option value="THB">THB</option>
-            <option value="USD">USD</option>
-        </select>
-        
-        <label>Paid By:</label>
-        <select id="paidBy">
-            <option value="">Loading...</option>
-        </select>
-        
-        <label>Split Between:</label>
-        <div id="participantsContainer">
-            Loading participants...
+    <div id="app" style="display: none;">
+        <div class="card">
+            <h2>➕ Add New Expense</h2>
+            
+            <div class="input-group">
+                <label>💰 Category</label>
+                <select id="category">
+                    <option value="Food">🍔 Food & Drinks</option>
+                    <option value="Transport">🚗 Transportation</option>
+                    <option value="Accommodation">🏨 Accommodation</option>
+                    <option value="Activities">🎡 Activities</option>
+                    <option value="Shopping">🛍️ Shopping</option>
+                    <option value="Alcohol">🍺 Alcohol</option>
+                    <option value="Other">📝 Other</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label>📝 Description / Item</label>
+                <input type="text" id="description" placeholder="What was it? (e.g., Beach dinner, Taxi to hotel)">
+            </div>
+            
+            <div class="input-group">
+                <label>📅 Date</label>
+                <input type="date" id="date">
+            </div>
+            
+            <div class="input-group">
+                <label>💸 Amount</label>
+                <input type="number" id="amount" placeholder="Enter amount" step="0.01">
+            </div>
+            
+            <div class="input-group">
+                <label>🌐 Currency</label>
+                <select id="currency">
+                    <option value="THB">🇹🇭 THB (Baht)</option>
+                    <option value="USD">🇺🇸 USD (Dollar)</option>
+                    <option value="EUR">🇪🇺 EUR (Euro)</option>
+                    <option value="JPY">🇯🇵 JPY (Yen)</option>
+                    <option value="GBP">🇬🇧 GBP (Pound)</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label>👤 Paid By</label>
+                <select id="paidBy">
+                    <!-- Participants will be loaded here -->
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label>👥 Split Between</label>
+                <div id="participantsContainer" class="participants-grid">
+                    <!-- Participants checkboxes will be loaded here -->
+                </div>
+                <button type="button" onclick="selectAllParticipants()" 
+                        style="margin-top: 10px; background: #6c757d; font-size: 14px;">
+                    Select All
+                </button>
+            </div>
+            
+            <button onclick="submitExpense()">➕ Add Expense</button>
+            
+            <div id="successMessage" class="success-message"></div>
+            <div id="errorMessage" class="error-message"></div>
         </div>
         
-        <button onclick="submitExpense()">Save Expense</button>
-        <div id="message"></div>
+        <div class="card">
+            <h2>📊 How It Works</h2>
+            <p>✅ All expenses saved to your shared Google Sheet</p>
+            <p>✅ Automatically converted to THB (if needed)</p>
+            <p>✅ Split between selected people</p>
+            <p>✅ Added to debt calculations</p>
+            <button onclick="openGoogleSheet()" style="background: #28a745;">
+                📋 Open Google Sheet
+            </button>
+        </div>
     </div>
 
     <script>
         // ========== CONFIGURATION ==========
-        // ⚠️ UPDATE THESE ⚠️
-        const API_URL = 'https://script.google.com/macros/s/AKfycby0K0VEU-aLWPLuiQ4k11iBDJK5N8eeliJhx7xmIMZZ-KU2i6wpxQ1diij5NrSbXJczDQ/exec'; // Your Web App URL
-        const LIFF_ID = '2008858986-uLQlNN1S'; // Your LIFF ID
+        // ⚠️ USE THE SAME VALUES FROM THE DEBUG VERSION ⚠️
+        const API_URL = 'https://script.google.com/macros/s/AKfycby0K0VEU-aLWPLuiQ4k11iBDJK5N8eeliJhx7xmIMZZ-KU2i6wpxQ1diij5NrSbXJczDQ/exec';
+        const LIFF_ID = 'YOUR_LIFF_ID_HERE'; // Your LIFF ID
         
-        let debugLog = [];
+        // ========== APP STATE ==========
+        let participantsList = [];
         
-        function log(msg) {
-            debugLog.push(new Date().toLocaleTimeString() + ': ' + msg);
-            document.getElementById('debug').innerHTML = debugLog.join('<br>');
-            console.log(msg);
-        }
-        
-        // ========== INITIALIZE ==========
-        async function init() {
+        // ========== INITIALIZE APP ==========
+        async function initializeApp() {
             try {
-                log('1. Starting LIFF init...');
+                // 1. Initialize LIFF
                 await liff.init({ liffId: LIFF_ID });
-                log('✅ LIFF initialized');
                 
+                // 2. Check login
                 if (!liff.isLoggedIn()) {
-                    log('Not logged in, redirecting...');
                     liff.login();
                     return;
                 }
                 
-                log('2. Testing API connection...');
-                const apiTest = await fetch(API_URL + '?action=test');
-                const apiResult = await apiTest.json();
-                log('API Test: ' + JSON.stringify(apiResult));
-                
-                log('3. Loading participants...');
+                // 3. Load participants from Google Sheets
                 await loadParticipants();
                 
-                log('4. Showing app...');
+                // 4. Set today's date
+                document.getElementById('date').valueAsDate = new Date();
+                
+                // 5. Show the app
+                document.getElementById('loading').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
                 
-            } catch(error) {
-                log('❌ ERROR: ' + error.toString());
+            } catch (error) {
+                showError('Failed to initialize: ' + error.message);
             }
         }
         
         // ========== LOAD PARTICIPANTS ==========
         async function loadParticipants() {
             try {
-                log('Fetching from: ' + API_URL + '?action=getParticipants');
                 const response = await fetch(API_URL + '?action=getParticipants');
-                log('Response status: ' + response.status);
-                
                 const data = await response.json();
-                log('API Response: ' + JSON.stringify(data));
                 
-                if (data.participants && data.participants.length > 0) {
-                    // Update Paid By dropdown
-                    const paidBySelect = document.getElementById('paidBy');
-                    paidBySelect.innerHTML = '';
-                    data.participants.forEach(person => {
-                        const option = document.createElement('option');
-                        option.value = person;
-                        option.textContent = person;
-                        paidBySelect.appendChild(option);
-                    });
-                    log('✅ Paid By dropdown loaded: ' + data.participants.length + ' options');
-                    
-                    // Update participants checkboxes
-                    const container = document.getElementById('participantsContainer');
-                    container.innerHTML = '';
-                    data.participants.forEach(person => {
-                        const label = document.createElement('label');
-                        label.style.display = 'block';
-                        label.innerHTML = `
-                            <input type="checkbox" value="${person}" checked>
-                            ${person}
-                        `;
-                        container.appendChild(label);
-                    });
-                    log('✅ Participants checkboxes loaded');
-                    
-                } else {
-                    log('❌ No participants found in response');
+                if (!data.participants) {
+                    throw new Error('No participants found');
                 }
                 
-            } catch(error) {
-                log('❌ Error loading participants: ' + error.toString());
+                participantsList = data.participants;
+                
+                // Populate Paid By dropdown
+                const paidBySelect = document.getElementById('paidBy');
+                paidBySelect.innerHTML = '';
+                participantsList.forEach(person => {
+                    const option = document.createElement('option');
+                    option.value = person;
+                    option.textContent = person;
+                    paidBySelect.appendChild(option);
+                });
+                
+                // Create participant checkboxes
+                const container = document.getElementById('participantsContainer');
+                container.innerHTML = '';
+                participantsList.forEach(person => {
+                    const div = document.createElement('div');
+                    div.className = 'participant-checkbox';
+                    div.innerHTML = `
+                        <input type="checkbox" id="participant_${person}" 
+                               value="${person}" checked>
+                        <label for="participant_${person}" style="margin:0; cursor:pointer;">
+                            ${person}
+                        </label>
+                    `;
+                    container.appendChild(div);
+                });
+                
+            } catch (error) {
+                showError('Could not load participants: ' + error.message);
             }
         }
         
-        // ========== START ==========
-        document.addEventListener('DOMContentLoaded', init);
+        // ========== SUBMIT EXPENSE ==========
+        async function submitExpense() {
+            const category = document.getElementById('category').value;
+            const description = document.getElementById('description').value;
+            const date = document.getElementById('date').value;
+            const amount = document.getElementById('amount').value;
+            const currency = document.getElementById('currency').value;
+            const paidBy = document.getElementById('paidBy').value;
+            
+            // Get selected participants
+            const checkboxes = document.querySelectorAll('#participantsContainer input[type="checkbox"]:checked');
+            const selectedParticipants = Array.from(checkboxes).map(cb => cb.value);
+            
+            // Validation
+            if (!description) {
+                showError('Please enter a description');
+                return;
+            }
+            if (!amount || parseFloat(amount) <= 0) {
+                showError('Please enter a valid amount');
+                return;
+            }
+            if (selectedParticipants.length === 0) {
+                showError('Please select at least one participant');
+                return;
+            }
+            
+            const expenseData = {
+                action: 'saveExpense',
+                category: category,
+                description: description,
+                date: date,
+                amount: parseFloat(amount),
+                currency: currency,
+                paidBy: paidBy,
+                participants: selectedParticipants
+            };
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(expenseData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showSuccess('✅ Expense added successfully!');
+                    // Clear form fields
+                    document.getElementById('description').value = '';
+                    document.getElementById('amount').value = '';
+                } else {
+                    showError('Error: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                showError('Network error. Please try again.');
+            }
+        }
+        
+        // ========== HELPER FUNCTIONS ==========
+        function selectAllParticipants() {
+            const checkboxes = document.querySelectorAll('#participantsContainer input[type="checkbox"]');
+            checkboxes.forEach(cb => cb.checked = true);
+        }
+        
+        function showSuccess(message) {
+            const div = document.getElementById('successMessage');
+            div.textContent = message;
+            div.style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+            
+            setTimeout(() => {
+                div.style.display = 'none';
+            }, 3000);
+        }
+        
+        function showError(message) {
+            const div = document.getElementById('errorMessage');
+            div.textContent = message;
+            div.style.display = 'block';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+        
+        function openGoogleSheet() {
+            const sheetUrl = 'https://docs.google.com/spreadsheets/d/16ZLz6TEfsCJEd8r66z4Bu4afhilFVfV8LV4UdD1XryA/edit';
+            if (liff.isInClient()) {
+                liff.openWindow({ url: sheetUrl, external: true });
+            } else {
+                window.open(sheetUrl, '_blank');
+            }
+        }
+        
+        // ========== START THE APP ==========
+        document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
 </body>
 </html>
