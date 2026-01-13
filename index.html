@@ -1,310 +1,151 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>✈️ Travel Expense Splitter</title>
+    <title>✈️ Expense Splitter - DEBUG</title>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        * { box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 20px;
-            background: #f0f2f5;
-        }
-        .card {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin: 20px 0;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        }
-        h1 { color: #1890ff; text-align: center; }
-        label { display: block; margin: 15px 0 5px; font-weight: 600; color: #333; }
-        input, select, button {
-            width: 100%;
-            padding: 14px;
-            margin: 5px 0 15px;
-            border: 2px solid #e8e8e8;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: border 0.3s;
-        }
-        input:focus, select:focus {
-            border-color: #1890ff;
-            outline: none;
-        }
-        button {
-            background: linear-gradient(135deg, #06c755 0%, #05a244 100%);
-            color: white;
-            border: none;
-            font-weight: bold;
-            font-size: 18px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        button:hover { opacity: 0.9; }
-        .checkbox-group { margin: 10px 0; }
-        .checkbox-group label { 
-            display: flex; 
-            align-items: center; 
-            font-weight: normal;
-            margin: 8px 0;
-            cursor: pointer;
-        }
-        .checkbox-group input { 
-            width: auto; 
-            margin-right: 10px; 
-        }
-        #loading { text-align: center; padding: 40px; }
-        .message { 
-            padding: 15px; 
-            border-radius: 10px; 
-            margin: 15px 0; 
-            display: none;
-            font-weight: bold;
-        }
-        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        body { font-family: Arial; padding: 20px; max-width: 500px; margin: 0 auto; }
+        .card { background: #f5f5f5; padding: 20px; margin: 10px 0; border-radius: 10px; }
+        input, select, button { width: 100%; padding: 10px; margin: 5px 0; }
+        button { background: #06c755; color: white; border: none; }
+        #debug { background: #333; color: #0f0; padding: 10px; font-family: monospace; }
+        .error { color: red; }
     </style>
 </head>
 <body>
-    <h1>✈️ Travel Expense Splitter</h1>
+    <h1>💰 Expense Splitter - DEBUG</h1>
     
-    <div id="loading" class="card">
-        <p>Loading your expense tracker...</p>
+    <div class="card">
+        <h3>Debug Info</h3>
+        <div id="debug">Loading...</div>
     </div>
     
-    <div id="app" style="display: none;">
-        <div class="card">
-            <h2>➕ Add New Expense</h2>
-            
-            <label>Category:</label>
-            <select id="category">
-                <option value="Food">🍔 Food & Drinks</option>
-                <option value="Transport">🚗 Transportation</option>
-                <option value="Accommodation">🏨 Accommodation</option>
-                <option value="Activities">🎡 Activities</option>
-                <option value="Shopping">🛍️ Shopping</option>
-                <option value="Other">📝 Other</option>
-            </select>
-            
-            <label>Description / Item:</label>
-            <input type="text" id="description" placeholder="e.g., Beach dinner, Taxi to hotel">
-            
-            <label>Date:</label>
-            <input type="date" id="date">
-            
-            <label>Amount:</label>
-            <input type="number" id="amount" placeholder="0.00" step="0.01">
-            
-            <label>Currency:</label>
-            <select id="currency">
-                <option value="THB">🇹🇭 Thai Baht (THB)</option>
-                <option value="USD">🇺🇸 US Dollar (USD)</option>
-                <option value="EUR">🇪🇺 Euro (EUR)</option>
-                <option value="JPY">🇯🇵 Japanese Yen (JPY)</option>
-                <option value="GBP">🇬🇧 British Pound (GBP)</option>
-            </select>
-            
-            <label>Paid By:</label>
-            <select id="paidBy"></select>
-            
-            <label>Split Between:</label>
-            <div id="participantsContainer" class="checkbox-group">
-                <!-- Participants load here -->
-            </div>
-            <button type="button" onclick="toggleSelectAll()" style="background: #6c757d; font-size: 14px;">
-                🔄 Toggle Select All
-            </button>
-            
-            <button onclick="submitExpense()">💾 Save Expense</button>
-            
-            <div id="message" class="message"></div>
+    <div class="card" id="app" style="display:none;">
+        <h3>➕ Add Expense</h3>
+        
+        <label>Category:</label>
+        <select id="category">
+            <option value="Food">Food</option>
+            <option value="Transport">Transport</option>
+        </select>
+        
+        <label>Description:</label>
+        <input type="text" id="description" placeholder="e.g., Dinner">
+        
+        <label>Amount:</label>
+        <input type="number" id="amount" placeholder="0">
+        
+        <label>Currency:</label>
+        <select id="currency">
+            <option value="THB">THB</option>
+            <option value="USD">USD</option>
+        </select>
+        
+        <label>Paid By:</label>
+        <select id="paidBy">
+            <option value="">Loading...</option>
+        </select>
+        
+        <label>Split Between:</label>
+        <div id="participantsContainer">
+            Loading participants...
         </div>
         
-        <div class="card">
-            <h3>📋 How It Works</h3>
-            <p>1. Fill in the details above.</p>
-            <p>2. The expense is saved to your shared Google Sheet.</p>
-            <p>3. It will appear in the "Travel Expense/Settlement Tracker".</p>
-            <p>4. All amounts are automatically converted and split!</p>
-        </div>
+        <button onclick="submitExpense()">Save Expense</button>
+        <div id="message"></div>
     </div>
 
     <script>
         // ========== CONFIGURATION ==========
-        // ⚠️ ⚠️ ⚠️ REPLACE THESE TWO VALUES ⚠️ ⚠️ ⚠️
-        const API_URL = 'https://script.google.com/macros/s/AKfycby0K0VEU-aLWPLuiQ4k11iBDJK5N8eeliJhx7xmIMZZ-KU2i6wpxQ1diij5NrSbXJczDQ/exec '; // From Deployment
-        const LIFF_ID = '2008858986-uLQlNN1S'; // From Line Developers Console
+        // ⚠️ UPDATE THESE ⚠️
+        const API_URL = 'https://script.google.com/macros/s/AKfycby0K0VEU-aLWPLuiQ4k11iBDJK5N8eeliJhx7xmIMZZ-KU2i6wpxQ1diij5NrSbXJczDQ/exec'; // Your Web App URL
+        const LIFF_ID = '2008858986-uLQlNN1S'; // Your LIFF ID
         
-        // ========== APP STATE ==========
-        let participantsList = [];
+        let debugLog = [];
         
-        // ========== INITIALIZE LIFF ==========
-        async function initializeApp() {
+        function log(msg) {
+            debugLog.push(new Date().toLocaleTimeString() + ': ' + msg);
+            document.getElementById('debug').innerHTML = debugLog.join('<br>');
+            console.log(msg);
+        }
+        
+        // ========== INITIALIZE ==========
+        async function init() {
             try {
-                // 1. Init LIFF
+                log('1. Starting LIFF init...');
                 await liff.init({ liffId: LIFF_ID });
+                log('✅ LIFF initialized');
                 
-                // 2. Login if needed
                 if (!liff.isLoggedIn()) {
+                    log('Not logged in, redirecting...');
                     liff.login();
                     return;
                 }
                 
-                // 3. Load data from Google Sheets
+                log('2. Testing API connection...');
+                const apiTest = await fetch(API_URL + '?action=test');
+                const apiResult = await apiTest.json();
+                log('API Test: ' + JSON.stringify(apiResult));
+                
+                log('3. Loading participants...');
                 await loadParticipants();
                 
-                // 4. Set today's date
-                document.getElementById('date').valueAsDate = new Date();
-                
-                // 5. Show the app
-                document.getElementById('loading').style.display = 'none';
+                log('4. Showing app...');
                 document.getElementById('app').style.display = 'block';
                 
-                console.log('✅ App loaded successfully.');
-                
-            } catch (error) {
-                showMessage('Failed to initialize the app. Please try again.', 'error');
-                console.error('Initialization error:', error);
+            } catch(error) {
+                log('❌ ERROR: ' + error.toString());
             }
         }
         
         // ========== LOAD PARTICIPANTS ==========
         async function loadParticipants() {
             try {
-                const response = await fetch(`${API_URL}?action=getParticipants`);
+                log('Fetching from: ' + API_URL + '?action=getParticipants');
+                const response = await fetch(API_URL + '?action=getParticipants');
+                log('Response status: ' + response.status);
+                
                 const data = await response.json();
+                log('API Response: ' + JSON.stringify(data));
                 
-                if (data.error) throw new Error(data.error);
-                
-                participantsList = data.participants || [];
-                
-                // Populate "Paid By" dropdown
-                const paidBySelect = document.getElementById('paidBy');
-                paidBySelect.innerHTML = '';
-                participantsList.forEach(person => {
-                    const option = document.createElement('option');
-                    option.value = person;
-                    option.textContent = person;
-                    paidBySelect.appendChild(option);
-                });
-                
-                // Populate checkboxes
-                const container = document.getElementById('participantsContainer');
-                container.innerHTML = '';
-                participantsList.forEach(person => {
-                    const label = document.createElement('label');
-                    const checkbox = document.createElement('input');
-                    checkbox.type = 'checkbox';
-                    checkbox.value = person;
-                    checkbox.checked = true;
-                    checkbox.id = `check_${person}`;
-                    label.appendChild(checkbox);
-                    label.appendChild(document.createTextNode(` ${person}`));
-                    container.appendChild(label);
-                });
-                
-            } catch (error) {
-                showMessage('Could not load participants list.', 'error');
-                console.error('Error loading participants:', error);
-            }
-        }
-        
-        // ========== SUBMIT EXPENSE ==========
-        async function submitExpense() {
-            // Gather form data
-            const category = document.getElementById('category').value;
-            const description = document.getElementById('description').value.trim();
-            const date = document.getElementById('date').value;
-            const amount = parseFloat(document.getElementById('amount').value);
-            const currency = document.getElementById('currency').value;
-            const paidBy = document.getElementById('paidBy').value;
-            
-            // Get selected participants
-            const checkboxes = document.querySelectorAll('#participantsContainer input[type="checkbox"]:checked');
-            const selectedParticipants = Array.from(checkboxes).map(cb => cb.value);
-            
-            // Validation
-            if (!description) {
-                showMessage('Please enter a description for the expense.', 'error');
-                return;
-            }
-            if (!amount || amount <= 0) {
-                showMessage('Please enter a valid amount.', 'error');
-                return;
-            }
-            if (selectedParticipants.length === 0) {
-                showMessage('Please select at least one person to split with.', 'error');
-                return;
-            }
-            
-            // Prepare data for Google Sheets
-            const expenseData = {
-                action: 'saveExpense',
-                category: category,
-                description: description, // Key change from "payment"
-                date: date,
-                amount: amount,
-                currency: currency,
-                paidBy: paidBy,
-                participants: selectedParticipants
-            };
-            
-            // Show saving state
-            showMessage('Saving expense...', 'success');
-            
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(expenseData)
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    showMessage('✅ Expense saved successfully!', 'success');
-                    // Clear form (except date and selections)
-                    document.getElementById('description').value = '';
-                    document.getElementById('amount').value = '';
+                if (data.participants && data.participants.length > 0) {
+                    // Update Paid By dropdown
+                    const paidBySelect = document.getElementById('paidBy');
+                    paidBySelect.innerHTML = '';
+                    data.participants.forEach(person => {
+                        const option = document.createElement('option');
+                        option.value = person;
+                        option.textContent = person;
+                        paidBySelect.appendChild(option);
+                    });
+                    log('✅ Paid By dropdown loaded: ' + data.participants.length + ' options');
+                    
+                    // Update participants checkboxes
+                    const container = document.getElementById('participantsContainer');
+                    container.innerHTML = '';
+                    data.participants.forEach(person => {
+                        const label = document.createElement('label');
+                        label.style.display = 'block';
+                        label.innerHTML = `
+                            <input type="checkbox" value="${person}" checked>
+                            ${person}
+                        `;
+                        container.appendChild(label);
+                    });
+                    log('✅ Participants checkboxes loaded');
+                    
                 } else {
-                    showMessage(`Error: ${result.error || 'Unknown error'}`, 'error');
+                    log('❌ No participants found in response');
                 }
-            } catch (error) {
-                showMessage('Network error. Please check your connection.', 'error');
-                console.error('Submission error:', error);
+                
+            } catch(error) {
+                log('❌ Error loading participants: ' + error.toString());
             }
         }
         
-        // ========== HELPER FUNCTIONS ==========
-        function showMessage(text, type) {
-            const messageDiv = document.getElementById('message');
-            messageDiv.textContent = text;
-            messageDiv.className = `message ${type}`;
-            messageDiv.style.display = 'block';
-            
-            // Auto-hide success messages after 4 seconds
-            if (type === 'success') {
-                setTimeout(() => {
-                    messageDiv.style.display = 'none';
-                }, 4000);
-            }
-        }
-        
-        function toggleSelectAll() {
-            const checkboxes = document.querySelectorAll('#participantsContainer input[type="checkbox"]');
-            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-            
-            checkboxes.forEach(cb => {
-                cb.checked = !allChecked;
-            });
-        }
-        
-        // ========== START THE APP ==========
-        document.addEventListener('DOMContentLoaded', initializeApp);
+        // ========== START ==========
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
