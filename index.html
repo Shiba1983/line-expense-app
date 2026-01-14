@@ -105,13 +105,31 @@
             padding: 15px;
             background: #f8f9fa;
             border-radius: 8px;
-            max-height: 200px;
+            max-height: 300px;
             overflow-y: auto;
             margin: 10px 0;
         }
-        .participant-list ul {
-            margin: 0;
-            padding-left: 20px;
+        .participant-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .participant-item:last-child {
+            border-bottom: none;
+        }
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .delete-btn:hover {
+            background: #c82333;
         }
     </style>
 </head>
@@ -236,7 +254,7 @@
 
     <script>
         // ========== CONFIGURATION ==========
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxaYksLQ4XGuY-qRTfoTP0Aoo5YbAUKL75raTT9eh1XWt45JjKvF59IgsbocnM88K41tg/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxaYksLQ4XGuY-qRTfoTP0Aoo5YbAUKL75raTT9eh1XWt45JjKvF59IgsbocnM88K41tg/exec ';
         const LIFF_ID = '2008858986-uLQlNN1S';
         
         // ========== APP STATE ==========
@@ -245,56 +263,79 @@
         // ========== INITIALIZE APP ==========
         async function initializeApp() {
             try {
-                // 1. Initialize LIFF
+                console.log('1. Initializing LIFF...');
                 await liff.init({ liffId: LIFF_ID });
+                console.log('✅ LIFF initialized');
                 
-                // 2. Check login
                 if (!liff.isLoggedIn()) {
+                    console.log('Not logged in, redirecting...');
                     liff.login();
                     return;
                 }
                 
-                // 3. Load participants from Google Sheets
+                console.log('2. Loading participants...');
                 await loadParticipants();
+                console.log('✅ Participants loaded:', participantsList);
                 
-                // 4. Set today's date
+                // Set today's date
                 document.getElementById('date').valueAsDate = new Date();
                 
-                // 5. Show the main app
+                // Show the main app
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
                 
+                console.log('✅ App initialized successfully');
+                
             } catch (error) {
+                console.error('❌ Initialize error:', error);
                 showError('Failed to initialize: ' + error.message);
             }
         }
         
-        // ========== LOAD PARTICIPANTS (UPDATED) ==========
+        // ========== LOAD PARTICIPANTS ==========
         async function loadParticipants() {
             try {
+                console.log('Fetching participants from API...');
                 const response = await fetch(API_URL + '?action=getParticipants');
+                console.log('Response status:', response.status);
+                
                 const data = await response.json();
+                console.log('API Response:', data);
                 
                 if (data.error) {
                     throw new Error(data.error);
                 }
                 
                 participantsList = data.participants || [];
+                console.log('Participants list set to:', participantsList);
                 
-                // Update UI with the loaded participants
+                // Update UI
                 updateParticipantDropdowns();
                 updateParticipantListDisplay();
                 
             } catch (error) {
+                console.error('❌ Load participants error:', error);
                 showError('Could not load participants: ' + error.message);
             }
         }
         
         // ========== UPDATE PARTICIPANT DROPDOWNS ==========
         function updateParticipantDropdowns() {
+            console.log('Updating dropdowns with:', participantsList);
+            
             // Update Paid By dropdown
             const paidBySelect = document.getElementById('paidBy');
             paidBySelect.innerHTML = '';
+            
+            if (participantsList.length === 0) {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = 'No participants available';
+                paidBySelect.appendChild(option);
+                console.log('No participants available for dropdown');
+                return;
+            }
+            
             participantsList.forEach(person => {
                 const option = document.createElement('option');
                 option.value = person;
@@ -302,48 +343,116 @@
                 paidBySelect.appendChild(option);
             });
             
-            // Update participant checkboxes
+            console.log('✅ Paid By dropdown updated with', participantsList.length, 'options');
+        }
+        
+        // ========== UPDATE PARTICIPANT CHECKBOXES ==========
+        function updateParticipantCheckboxes() {
+            console.log('Updating checkboxes with:', participantsList);
             const container = document.getElementById('participantsContainer');
             container.innerHTML = '';
+            
+            if (participantsList.length === 0) {
+                container.innerHTML = '<p style="grid-column: span 2; text-align: center; color: #666;">No participants available. Add some in Manage Participants.</p>';
+                console.log('No participants available for checkboxes');
+                return;
+            }
+            
             participantsList.forEach(person => {
                 const div = document.createElement('div');
                 div.className = 'participant-checkbox';
                 div.innerHTML = `
-                    <input type="checkbox" id="participant_${person}" 
+                    <input type="checkbox" id="checkbox_${person}" 
                            value="${person}" checked>
-                    <label for="participant_${person}" style="margin:0; cursor:pointer;">
+                    <label for="checkbox_${person}" style="margin:0; cursor:pointer;">
                         ${person}
                     </label>
                 `;
                 container.appendChild(div);
             });
+            
+            console.log('✅ Participant checkboxes updated');
         }
         
         // ========== UPDATE PARTICIPANT LIST DISPLAY ==========
         function updateParticipantListDisplay() {
+            console.log('Updating participant list display with:', participantsList);
             const listDiv = document.getElementById('currentParticipantsList');
+            
+            if (!listDiv) {
+                console.error('currentParticipantsList element not found!');
+                return;
+            }
+            
             if (participantsList && participantsList.length > 0) {
-                let html = '<ul>';
+                let html = '';
                 participantsList.forEach(participant => {
-                    html += `<li>${participant}</li>`;
+                    // Escape quotes in participant name for JavaScript
+                    const safeName = participant.replace(/'/g, "\\'").replace(/"/g, '\\"');
+                    html += `
+                        <div class="participant-item">
+                            <span>${participant}</span>
+                            <button class="delete-btn" onclick="deleteParticipant('${safeName}')">
+                                Delete
+                            </button>
+                        </div>
+                    `;
                 });
-                html += '</ul>';
                 listDiv.innerHTML = html;
+                console.log('✅ Participant list display updated with', participantsList.length, 'items');
             } else {
-                listDiv.innerHTML = '<p>No participants yet. Add one above!</p>';
+                listDiv.innerHTML = '<p style="text-align: center; color: #666;">No participants yet. Add one above!</p>';
+                console.log('No participants to display');
+            }
+        }
+        
+        // ========== DELETE PARTICIPANT ==========
+        async function deleteParticipant(participantName) {
+            if (!confirm(`Are you sure you want to delete "${participantName}"?`)) {
+                return;
+            }
+            
+            console.log('Deleting participant:', participantName);
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'deleteParticipant',
+                        participantName: participantName
+                    })
+                });
+                
+                const result = await response.json();
+                console.log('Delete response:', result);
+                
+                if (result.success) {
+                    // Reload participants from API
+                    await loadParticipants();
+                    showSuccess(result.message);
+                } else {
+                    showError(result.message || 'Failed to delete participant');
+                }
+            } catch(error) {
+                console.error('❌ Delete participant error:', error);
+                showError('Network error. Please try again.');
             }
         }
         
         // ========== PARTICIPANT MANAGEMENT FUNCTIONS ==========
         function showParticipantManager() {
+            console.log('Showing participant manager');
             document.getElementById('app').style.display = 'none';
             document.getElementById('participantManager').style.display = 'block';
             updateParticipantListDisplay();
         }
         
         function goBackToExpense() {
+            console.log('Going back to expense tracker');
             document.getElementById('participantManager').style.display = 'none';
             document.getElementById('app').style.display = 'block';
+            // Also update checkboxes when returning
+            updateParticipantCheckboxes();
         }
         
         async function addNewParticipant() {
@@ -355,6 +464,8 @@
                 showError('Please enter a name');
                 return;
             }
+            
+            console.log('Adding new participant:', newName);
             
             // Save original button state
             const originalText = addButton.textContent;
@@ -371,16 +482,18 @@
                 });
                 
                 const result = await response.json();
+                console.log('Add participant response:', result);
                 
                 if (result.success) {
                     // Clear input
                     newNameInput.value = '';
                     
-                    // Update the local participants list
-                    participantsList = result.newList || participantsList;
+                    // Update participants list from API
+                    participantsList = result.newList || [];
                     
                     // Update all UI components
                     updateParticipantDropdowns();
+                    updateParticipantCheckboxes();
                     updateParticipantListDisplay();
                     
                     showSuccess(result.message);
@@ -388,8 +501,8 @@
                     showError(result.message || 'Failed to add participant');
                 }
             } catch(error) {
+                console.error('❌ Add participant error:', error);
                 showError('Network error. Please try again.');
-                console.error('Add participant error:', error);
             } finally {
                 // Restore button
                 addButton.textContent = originalText;
@@ -435,6 +548,8 @@
                 participants: selectedParticipants
             };
             
+            console.log('Submitting expense:', expenseData);
+            
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
@@ -442,6 +557,7 @@
                 });
                 
                 const result = await response.json();
+                console.log('Submit expense response:', result);
                 
                 if (result.success) {
                     showSuccess('✅ Expense added successfully!');
@@ -452,6 +568,7 @@
                     showError('Error: ' + (result.error || 'Unknown error'));
                 }
             } catch (error) {
+                console.error('❌ Submit expense error:', error);
                 showError('Network error. Please try again.');
             }
         }
@@ -460,9 +577,11 @@
         function selectAllParticipants() {
             const checkboxes = document.querySelectorAll('#participantsContainer input[type="checkbox"]');
             checkboxes.forEach(cb => cb.checked = true);
+            console.log('Selected all participants');
         }
         
         function showSuccess(message) {
+            console.log('Success:', message);
             const div = document.getElementById('successMessage');
             div.textContent = message;
             div.style.display = 'block';
@@ -474,6 +593,7 @@
         }
         
         function showError(message) {
+            console.error('Error:', message);
             const div = document.getElementById('errorMessage');
             div.textContent = message;
             div.style.display = 'block';
