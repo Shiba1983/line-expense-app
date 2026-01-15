@@ -1,323 +1,93 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>✈️ Travel Expense Splitter</title>
+    <title>Expense Tracker</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://static.line-scdn.net https://script.google.com 'unsafe-inline';">
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }
-        .card {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin: 15px 0;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        h1 {
-            color: white;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 24px;
-            padding: 10px;
-        }
-        .input-group {
-            margin: 15px 0;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-            font-size: 14px;
-        }
-        input, select, button {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s;
-            background: white;
-        }
-        input:focus, select:focus {
-            border-color: #667eea;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            font-weight: bold;
-            font-size: 18px;
-            cursor: pointer;
-            margin-top: 20px;
-            padding: 15px;
-        }
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 7px 20px rgba(0,0,0,0.2);
-        }
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-        .participants-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin: 10px 0;
-        }
-        .participant-checkbox {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            background: #f5f5f5;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        .participant-checkbox:hover {
-            background: #e9e9e9;
-        }
-        .participant-checkbox input {
-            width: 20px;
-            height: 20px;
-            margin-right: 10px;
-        }
-        .success-message {
-            background: #d4edda;
-            color: #155724;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            display: none;
-            text-align: center;
-        }
-        .error-message {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            display: none;
-            text-align: center;
-        }
-        #loading {
-            text-align: center;
-            padding: 40px;
-            color: white;
-        }
-        .participant-list {
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            max-height: 300px;
-            overflow-y: auto;
-            margin: 10px 0;
-        }
-        .participant-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        .participant-item:last-child {
-            border-bottom: none;
-        }
-        .delete-btn {
-            background: #dc3545;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        .delete-btn:hover {
-            background: #c82333;
-        }
-        .loading-spinner {
-            border: 3px solid rgba(255,255,255,0.3);
-            border-top: 3px solid white;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .debug-info {
-            background: rgba(0,0,0,0.1);
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            color: white;
-            margin-top: 10px;
-            display: none;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 500px; margin: 0 auto; background: #f5f5f5; }
+        .card { background: white; border-radius: 10px; padding: 20px; margin: 10px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h1 { text-align: center; margin-bottom: 20px; color: #333; }
+        .input-group { margin: 15px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, button { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 5px; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .participant-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
+        .delete-btn { background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
+        .message { padding: 10px; margin: 10px 0; border-radius: 5px; display: none; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        #loading { text-align: center; padding: 40px; }
+        .participant-checkbox { margin: 5px 0; }
     </style>
 </head>
 <body>
     <h1>✈️ Travel Expense Splitter</h1>
     
-    <div id="loading" class="card">
-        <div class="loading-spinner"></div>
-        <p>Loading your expense tracker...</p>
-    </div>
+    <div id="loading">Loading...</div>
     
-    <!-- Main Expense App -->
     <div id="app" style="display: none;">
+        <!-- Main View -->
         <div class="card">
-            <h2>➕ Add New Expense</h2>
-            
+            <h2>Add Expense</h2>
             <div class="input-group">
-                <label>💰 Category</label>
-                <select id="category">
-                    <option value="Food">🍔 Food & Drinks</option>
-                    <option value="Transport">🚗 Transportation</option>
-                    <option value="Accommodation">🏨 Accommodation</option>
-                    <option value="Activities">🎡 Activities</option>
-                    <option value="Shopping">🛍️ Shopping</option>
-                    <option value="Alcohol">🍺 Alcohol</option>
-                    <option value="Other">📝 Other</option>
-                </select>
+                <label>Description</label>
+                <input type="text" id="description" placeholder="What was it?">
             </div>
-            
             <div class="input-group">
-                <label>📝 Description / Item</label>
-                <input type="text" id="description" placeholder="What was it? (e.g., Beach dinner, Taxi to hotel)">
+                <label>Amount (THB)</label>
+                <input type="number" id="amount" placeholder="Amount" step="0.01">
             </div>
-            
             <div class="input-group">
-                <label>📅 Date</label>
-                <input type="date" id="date">
-            </div>
-            
-            <div class="input-group">
-                <label>💸 Amount</label>
-                <input type="number" id="amount" placeholder="Enter amount" step="0.01" min="0">
-            </div>
-            
-            <div class="input-group">
-                <label>🌐 Currency</label>
-                <select id="currency">
-                    <option value="THB">🇹🇭 THB (Baht)</option>
-                    <option value="USD">🇺🇸 USD (Dollar)</option>
-                    <option value="EUR">🇪🇺 EUR (Euro)</option>
-                    <option value="JPY">🇯🇵 JPY (Yen)</option>
-                    <option value="GBP">🇬🇧 GBP (Pound)</option>
-                </select>
-            </div>
-            
-            <div class="input-group">
-                <label>👤 Paid By</label>
+                <label>Paid By</label>
                 <select id="paidBy">
-                    <option value="">Loading participants...</option>
+                    <option value="">Loading...</option>
                 </select>
             </div>
-            
             <div class="input-group">
-                <label>👥 Split Between</label>
-                <div id="participantsContainer" class="participants-grid">
-                    <div style="grid-column: span 2; text-align: center; padding: 20px; color: #666;">
-                        Loading participants...
-                    </div>
-                </div>
-                <button type="button" onclick="selectAllParticipants()" 
-                        style="margin-top: 10px; background: #6c757d; font-size: 14px;">
-                    Select All
-                </button>
+                <label>Participants (split between)</label>
+                <div id="participantsCheckboxes"></div>
             </div>
-            
-            <button onclick="submitExpense()">➕ Add Expense</button>
-            
-            <div id="successMessage" class="success-message"></div>
-            <div id="errorMessage" class="error-message"></div>
-            
-            <!-- Participant Management Button -->
-            <button onclick="showParticipantManager()" style="background: #17a2b8; margin-top: 15px;">
-                👥 Manage Participants
+            <button onclick="submitExpense()">Add Expense</button>
+            <button onclick="showManageParticipants()" style="background: #6c757d; margin-top: 10px;">
+                Manage Participants
             </button>
         </div>
         
-        <div class="card">
-            <h2>📊 How It Works</h2>
-            <p>✅ All expenses saved to your shared Google Sheet</p>
-            <p>✅ Automatically converted to THB (if needed)</p>
-            <p>✅ Split between selected people</p>
-            <p>✅ Added to debt calculations</p>
-            <button onclick="openGoogleSheet()" style="background: #28a745;">
-                📋 Open Google Sheet
-            </button>
-        </div>
-        
-        <div class="debug-info" id="debugInfo">
-            <!-- Debug info will appear here -->
-        </div>
+        <div id="message" class="message"></div>
     </div>
     
-    <!-- Participant Manager (Initially Hidden) -->
-    <div id="participantManager" class="card" style="display: none;">
-        <h2>👥 Manage Participants</h2>
-        
-        <div class="input-group">
-            <label>Add New Participant</label>
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <input type="text" id="newParticipantName" placeholder="Enter full name" style="flex: 1;">
-                <button onclick="addNewParticipant()" id="addParticipantBtn" 
-                        style="width: auto; padding: 10px 20px; white-space: nowrap;">
-                    Add
-                </button>
+    <!-- Participant Manager -->
+    <div id="participantManager" style="display: none;">
+        <div class="card">
+            <h2>Manage Participants</h2>
+            <div class="input-group">
+                <input type="text" id="newParticipant" placeholder="New participant name">
+                <button onclick="addParticipant()">Add Participant</button>
             </div>
+            <div id="participantsList"></div>
+            <button onclick="showMainView()" style="background: #6c757d; margin-top: 20px;">
+                Back to Expenses
+            </button>
         </div>
-        
-        <div class="input-group">
-            <h4 style="margin-bottom: 10px;">Current Participants</h4>
-            <div id="currentParticipantsList" class="participant-list">
-                Loading participants...
-            </div>
-        </div>
-        
-        <button onclick="goBackToExpense()" style="background: #6c757d;">
-            ← Back to Expense Tracker
-        </button>
     </div>
 
     <script>
-        // ========== CONFIGURATION ==========
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzNWXXP9cPkbzov4UduptQmCITFDEWjpULvhCmyCTGPo4A21QgKFNG787W616azGys3Cg/exec';
-        const LIFF_ID = '2008858986-uLQlNN1S';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwjuGfb5fYZIrendAiXalZtUbzaKwj_g5z6E17ZtN8DmHaIysKzo9yAk_VyvtyiUHUiHg/exec';
+        let participants = [];
         
-        // ========== APP STATE ==========
-        let participantsList = [];
-        
-        // ========== INITIALIZE APP ==========
-        async function initializeApp() {
+        // Initialize
+        async function init() {
             try {
-                console.log('=== INITIALIZING APP ===');
+                console.log('Initializing app...');
                 
                 // Initialize LIFF
-                console.log('1. Initializing LIFF...');
-                await liff.init({ liffId: LIFF_ID });
-                console.log('✅ LIFF initialized');
+                await liff.init({ liffId: '2008858986-uLQlNN1S' });
+                console.log('LIFF initialized');
                 
-                // Check login
                 if (!liff.isLoggedIn()) {
                     console.log('Not logged in, redirecting to login...');
                     liff.login();
@@ -326,260 +96,141 @@
                 
                 // Get user profile
                 const profile = await liff.getProfile();
-                console.log('User profile:', profile.displayName);
-                
-                // Set today's date
-                const today = new Date();
-                const formattedDate = today.toISOString().split('T')[0];
-                document.getElementById('date').value = formattedDate;
+                console.log('Logged in as:', profile.displayName);
                 
                 // Load participants
-                console.log('2. Loading participants...');
                 await loadParticipants();
                 
                 // Show app
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
                 
-                console.log('✅ App initialized successfully');
-                logDebug('App initialized successfully');
+                console.log('App initialized successfully');
                 
             } catch (error) {
-                console.error('❌ Initialize error:', error);
-                showError('Failed to initialize: ' + error.message);
-                
+                console.error('Init error:', error);
+                document.getElementById('loading').innerHTML = 'Error: ' + error.message;
                 // Show app anyway for testing
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
             }
         }
         
-        // ========== LOAD PARTICIPANTS ==========
+        // Load participants from API
         async function loadParticipants() {
             try {
-                console.log('=== LOADING PARTICIPANTS ===');
+                console.log('Loading participants from:', API_URL);
                 
-                // Clear current list
-                participantsList = [];
-                updateParticipantDropdowns();
-                updateParticipantCheckboxes();
-                
-                // Fetch from API
-                const timestamp = new Date().getTime();
-                const url = `${API_URL}?action=getParticipants&_=${timestamp}`;
+                // Use cache busting
+                const url = API_URL + '?action=getParticipants&t=' + Date.now();
                 console.log('Fetching from:', url);
                 
                 const response = await fetch(url);
                 console.log('Response status:', response.status);
                 
                 const data = await response.json();
-                console.log('API Response:', data);
+                console.log('API response:', data);
                 
-                // Handle response
                 if (data.error) {
-                    console.warn('API returned error:', data.error);
-                    showError('API Error: ' + data.error);
-                    participantsList = [];
+                    console.error('API error:', data.error);
+                    showMessage('Error loading participants: ' + data.error, 'error');
+                    participants = [];
                 } else if (data.participants && Array.isArray(data.participants)) {
-                    participantsList = data.participants;
-                    console.log('Loaded participants:', participantsList);
-                    logDebug(`Loaded ${participantsList.length} participants`);
+                    participants = data.participants;
+                    console.log('Participants loaded:', participants);
                 } else {
-                    console.warn('Unexpected response format:', data);
-                    participantsList = [];
+                    console.error('Unexpected response format:', data);
+                    participants = [];
                 }
                 
-                // Update UI
-                updateParticipantDropdowns();
-                updateParticipantCheckboxes();
-                updateParticipantListDisplay();
+                updateUI();
                 
             } catch (error) {
-                console.error('❌ Load participants error:', error);
-                showError('Network error: ' + error.message);
-                participantsList = [];
-                
-                // Update UI with empty state
-                updateParticipantDropdowns();
-                updateParticipantCheckboxes();
-                updateParticipantListDisplay();
+                console.error('Load participants error:', error);
+                showMessage('Failed to load participants: ' + error.message, 'error');
+                participants = [];
+                updateUI();
             }
         }
         
-        // ========== UPDATE PARTICIPANT DROPDOWNS ==========
-        function updateParticipantDropdowns() {
-            console.log('Updating dropdowns with:', participantsList);
+        // Update UI with participants
+        function updateUI() {
+            console.log('Updating UI with participants:', participants);
             
+            // Update Paid By dropdown
             const paidBySelect = document.getElementById('paidBy');
-            if (!paidBySelect) return;
-            
-            // Clear dropdown
-            paidBySelect.innerHTML = '';
-            
-            if (participantsList.length === 0) {
-                const option = document.createElement('option');
-                option.value = '';
-                option.textContent = 'No participants available';
-                paidBySelect.appendChild(option);
-                paidBySelect.disabled = true;
-                return;
-            }
-            
-            // Add participants
-            participantsList.forEach(person => {
-                const option = document.createElement('option');
-                option.value = person;
-                option.textContent = person;
-                paidBySelect.appendChild(option);
-            });
-            
-            paidBySelect.disabled = false;
-            console.log('✅ Dropdown updated');
-        }
-        
-        // ========== UPDATE PARTICIPANT CHECKBOXES ==========
-        function updateParticipantCheckboxes() {
-            console.log('Updating checkboxes with:', participantsList);
-            
-            const container = document.getElementById('participantsContainer');
-            if (!container) return;
-            
-            // Clear container
-            container.innerHTML = '';
-            
-            if (participantsList.length === 0) {
-                container.innerHTML = '<div style="grid-column: span 2; text-align: center; padding: 20px; color: #666;">No participants available. Add some in Manage Participants.</div>';
-                return;
-            }
-            
-            // Create checkbox for each participant
-            participantsList.forEach(person => {
-                const div = document.createElement('div');
-                div.className = 'participant-checkbox';
+            if (paidBySelect) {
+                paidBySelect.innerHTML = '';
                 
-                // Create checkbox
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.id = 'participant_' + person.replace(/\s+/g, '_');
-                checkbox.value = person;
-                checkbox.checked = true;
-                
-                // Create label
-                const label = document.createElement('label');
-                label.htmlFor = checkbox.id;
-                label.textContent = person;
-                label.style.cssText = 'margin: 0; cursor: pointer; flex-grow: 1;';
-                
-                // Assemble
-                div.appendChild(checkbox);
-                div.appendChild(label);
-                container.appendChild(div);
-            });
-            
-            console.log('✅ Checkboxes updated');
-        }
-        
-        // ========== UPDATE PARTICIPANT LIST DISPLAY ==========
-        function updateParticipantListDisplay() {
-            console.log('Updating participant list display');
-            
-            const listDiv = document.getElementById('currentParticipantsList');
-            if (!listDiv) return;
-            
-            if (participantsList.length === 0) {
-                listDiv.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">No participants yet. Add one above!</div>';
-                return;
-            }
-            
-            // Create participant items
-            let html = '';
-            participantsList.forEach(participant => {
-                const encodedName = encodeURIComponent(participant);
-                html += `
-                    <div class="participant-item">
-                        <span>${participant}</span>
-                        <button class="delete-btn" onclick="deleteParticipant('${encodedName}')">
-                            Delete
-                        </button>
-                    </div>
-                `;
-            });
-            
-            listDiv.innerHTML = html;
-            console.log('✅ Participant list updated');
-        }
-        
-        // ========== DELETE PARTICIPANT ==========
-        async function deleteParticipant(encodedName) {
-            const participantName = decodeURIComponent(encodedName);
-            
-            if (!confirm(`Are you sure you want to delete "${participantName}"?`)) {
-                return;
-            }
-            
-            console.log('Deleting participant:', participantName);
-            
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'deleteParticipant',
-                        participantName: participantName
-                    })
-                });
-                
-                const result = await response.json();
-                console.log('Delete response:', result);
-                
-                if (result.success) {
-                    // Update local list
-                    participantsList = result.newList || [];
-                    
-                    // Update UI
-                    updateParticipantDropdowns();
-                    updateParticipantCheckboxes();
-                    updateParticipantListDisplay();
-                    
-                    showSuccess(result.message);
-                    logDebug(`Deleted participant: ${participantName}`);
+                if (participants.length === 0) {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = 'No participants available';
+                    paidBySelect.appendChild(option);
+                    paidBySelect.disabled = true;
                 } else {
-                    showError(result.message || 'Failed to delete participant');
+                    paidBySelect.disabled = false;
+                    participants.forEach(p => {
+                        const option = document.createElement('option');
+                        option.value = p;
+                        option.textContent = p;
+                        paidBySelect.appendChild(option);
+                    });
                 }
-            } catch(error) {
-                console.error('❌ Delete participant error:', error);
-                showError('Network error. Please try again.');
+            }
+            
+            // Update checkboxes
+            const checkboxesDiv = document.getElementById('participantsCheckboxes');
+            if (checkboxesDiv) {
+                checkboxesDiv.innerHTML = '';
+                
+                if (participants.length === 0) {
+                    checkboxesDiv.innerHTML = '<p style="color: #666; text-align: center;">No participants available</p>';
+                } else {
+                    participants.forEach(p => {
+                        const div = document.createElement('div');
+                        div.className = 'participant-checkbox';
+                        div.innerHTML = `
+                            <input type="checkbox" id="chk_${p.replace(/\s+/g, '_')}" value="${p}" checked>
+                            <label for="chk_${p.replace(/\s+/g, '_')}">${p}</label>
+                        `;
+                        checkboxesDiv.appendChild(div);
+                    });
+                }
+            }
+            
+            // Update participant list
+            const listDiv = document.getElementById('participantsList');
+            if (listDiv) {
+                listDiv.innerHTML = '';
+                
+                if (participants.length === 0) {
+                    listDiv.innerHTML = '<p style="color: #666; text-align: center;">No participants yet</p>';
+                } else {
+                    participants.forEach(p => {
+                        const item = document.createElement('div');
+                        item.className = 'participant-item';
+                        item.innerHTML = `
+                            <span>${p}</span>
+                            <button class="delete-btn" onclick="deleteParticipant('${p.replace(/'/g, "\\'")}')">Delete</button>
+                        `;
+                        listDiv.appendChild(item);
+                    });
+                }
             }
         }
         
-        // ========== PARTICIPANT MANAGEMENT FUNCTIONS ==========
-        function showParticipantManager() {
-            document.getElementById('app').style.display = 'none';
-            document.getElementById('participantManager').style.display = 'block';
-            updateParticipantListDisplay();
-        }
-        
-        function goBackToExpense() {
-            document.getElementById('participantManager').style.display = 'none';
-            document.getElementById('app').style.display = 'block';
-        }
-        
-        async function addNewParticipant() {
-            const newNameInput = document.getElementById('newParticipantName');
-            const addButton = document.getElementById('addParticipantBtn');
-            const newName = newNameInput.value.trim();
+        // Add participant
+        async function addParticipant() {
+            const nameInput = document.getElementById('newParticipant');
+            const name = nameInput.value.trim();
             
-            if (!newName) {
-                showError('Please enter a name');
+            if (!name) {
+                showMessage('Please enter a name', 'error');
                 return;
             }
             
-            console.log('Adding new participant:', newName);
-            
-            // Disable button
-            addButton.disabled = true;
-            const originalText = addButton.textContent;
-            addButton.textContent = 'Adding...';
+            console.log('Adding participant:', name);
             
             try {
                 const response = await fetch(API_URL, {
@@ -587,7 +238,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         action: 'addParticipant',
-                        participantName: newName
+                        participantName: name
                     })
                 });
                 
@@ -595,191 +246,141 @@
                 console.log('Add participant response:', result);
                 
                 if (result.success) {
-                    // Clear input
-                    newNameInput.value = '';
-                    
-                    // Update local list
-                    participantsList = result.newList || [];
-                    
-                    // Update UI
-                    updateParticipantDropdowns();
-                    updateParticipantCheckboxes();
-                    updateParticipantListDisplay();
-                    
-                    showSuccess(result.message);
-                    logDebug(`Added participant: ${newName}`);
-                    
-                    // Go back to expense tracker after delay
-                    setTimeout(() => {
-                        goBackToExpense();
-                    }, 1500);
+                    nameInput.value = '';
+                    participants = result.newList || [];
+                    updateUI();
+                    showMessage(result.message, 'success');
                 } else {
-                    showError(result.message || 'Failed to add participant');
+                    showMessage(result.message, 'error');
                 }
-            } catch(error) {
-                console.error('❌ Add participant error:', error);
-                showError('Network error. Please try again.');
-            } finally {
-                // Re-enable button
-                addButton.disabled = false;
-                addButton.textContent = originalText;
+            } catch (error) {
+                console.error('Add participant error:', error);
+                showMessage('Network error: ' + error.message, 'error');
             }
         }
         
-        // ========== SUBMIT EXPENSE ==========
-        async function submitExpense() {
-            const category = document.getElementById('category').value;
-            const description = document.getElementById('description').value.trim();
-            const date = document.getElementById('date').value;
-            const amount = parseFloat(document.getElementById('amount').value);
-            const currency = document.getElementById('currency').value;
-            const paidBy = document.getElementById('paidBy').value;
+        // Delete participant
+        async function deleteParticipant(name) {
+            if (!confirm(`Delete "${name}"?`)) return;
             
-            // Get selected participants
-            const checkboxes = document.querySelectorAll('#participantsContainer input[type="checkbox"]:checked');
-            const selectedParticipants = Array.from(checkboxes).map(cb => cb.value);
-            
-            // Validation
-            if (!description) {
-                showError('Please enter a description');
-                return;
-            }
-            if (!amount || isNaN(amount) || amount <= 0) {
-                showError('Please enter a valid amount');
-                return;
-            }
-            if (!paidBy) {
-                showError('Please select who paid');
-                return;
-            }
-            if (selectedParticipants.length === 0) {
-                showError('Please select at least one participant');
-                return;
-            }
-            
-            // Prepare data
-            const expenseData = {
-                action: 'saveExpense',
-                category: category,
-                description: description,
-                date: date,
-                amount: amount,
-                currency: currency,
-                paidBy: paidBy,
-                participants: selectedParticipants
-            };
-            
-            console.log('Submitting expense:', expenseData);
+            console.log('Deleting participant:', name);
             
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(expenseData)
+                    body: JSON.stringify({
+                        action: 'deleteParticipant',
+                        participantName: name
+                    })
                 });
                 
                 const result = await response.json();
-                console.log('Submit expense response:', result);
+                console.log('Delete participant response:', result);
                 
                 if (result.success) {
-                    showSuccess(result.message || '✅ Expense added successfully!');
-                    
+                    participants = result.newList || [];
+                    updateUI();
+                    showMessage(result.message, 'success');
+                } else {
+                    showMessage(result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Delete participant error:', error);
+                showMessage('Network error: ' + error.message, 'error');
+            }
+        }
+        
+        // Submit expense
+        async function submitExpense() {
+            const description = document.getElementById('description').value.trim();
+            const amount = document.getElementById('amount').value;
+            const paidBy = document.getElementById('paidBy').value;
+            
+            // Get selected participants
+            const checkboxes = document.querySelectorAll('#participantsCheckboxes input[type="checkbox"]:checked');
+            const selected = Array.from(checkboxes).map(cb => cb.value);
+            
+            // Validation
+            if (!description) {
+                showMessage('Please enter a description', 'error');
+                return;
+            }
+            if (!amount || parseFloat(amount) <= 0) {
+                showMessage('Please enter a valid amount', 'error');
+                return;
+            }
+            if (!paidBy) {
+                showMessage('Please select who paid', 'error');
+                return;
+            }
+            if (selected.length === 0) {
+                showMessage('Please select at least one participant', 'error');
+                return;
+            }
+            
+            console.log('Submitting expense:', { description, amount, paidBy, selected });
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'saveExpense',
+                        category: 'Other',
+                        description: description,
+                        date: new Date().toISOString().split('T')[0],
+                        amount: parseFloat(amount),
+                        currency: 'THB',
+                        paidBy: paidBy,
+                        participants: selected
+                    })
+                });
+                
+                const result = await response.json();
+                console.log('Save expense response:', result);
+                
+                if (result.success) {
                     // Clear form
                     document.getElementById('description').value = '';
                     document.getElementById('amount').value = '';
                     
-                    logDebug(`Added expense: ${description} - ${amount} ${currency}`);
+                    showMessage(result.message, 'success');
                 } else {
-                    showError(result.error || result.message || 'Unknown error occurred');
+                    showMessage(result.message || 'Error saving expense', 'error');
                 }
             } catch (error) {
-                console.error('❌ Submit expense error:', error);
-                showError('Network error. Please try again.');
+                console.error('Submit expense error:', error);
+                showMessage('Network error: ' + error.message, 'error');
             }
         }
         
-        // ========== HELPER FUNCTIONS ==========
-        function selectAllParticipants() {
-            const checkboxes = document.querySelectorAll('#participantsContainer input[type="checkbox"]');
-            checkboxes.forEach(cb => cb.checked = true);
-            console.log('Selected all participants');
+        // View management
+        function showManageParticipants() {
+            document.getElementById('app').style.display = 'none';
+            document.getElementById('participantManager').style.display = 'block';
         }
         
-        function showSuccess(message) {
-            const successDiv = document.getElementById('successMessage');
-            const errorDiv = document.getElementById('errorMessage');
-            
-            if (successDiv) {
-                successDiv.textContent = message;
-                successDiv.style.display = 'block';
-            }
-            
-            if (errorDiv) {
-                errorDiv.style.display = 'none';
-            }
-            
+        function showMainView() {
+            document.getElementById('participantManager').style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+        }
+        
+        // Show messages
+        function showMessage(text, type) {
+            const msgDiv = document.getElementById('message');
+            msgDiv.textContent = text;
+            msgDiv.className = 'message ' + type;
+            msgDiv.style.display = 'block';
             setTimeout(() => {
-                if (successDiv) successDiv.style.display = 'none';
+                msgDiv.style.display = 'none';
             }, 3000);
         }
         
-        function showError(message) {
-            const successDiv = document.getElementById('successMessage');
-            const errorDiv = document.getElementById('errorMessage');
-            
-            if (errorDiv) {
-                errorDiv.textContent = message;
-                errorDiv.style.display = 'block';
-            }
-            
-            if (successDiv) {
-                successDiv.style.display = 'none';
-            }
-            
-            setTimeout(() => {
-                if (errorDiv) errorDiv.style.display = 'none';
-            }, 5000);
-        }
-        
-        function openGoogleSheet() {
-            const sheetUrl = 'https://docs.google.com/spreadsheets/d/16ZLz6TEfsCJEd8r66z4Bu4afhilFVfV8LV4UdD1XryA/edit';
-            if (liff.isInClient()) {
-                liff.openWindow({ url: sheetUrl, external: true });
-            } else {
-                window.open(sheetUrl, '_blank');
-            }
-        }
-        
-        function logDebug(message) {
-            const debugDiv = document.getElementById('debugInfo');
-            if (debugDiv) {
-                const timestamp = new Date().toLocaleTimeString();
-                debugDiv.innerHTML += `<div>${timestamp}: ${message}</div>`;
-                debugDiv.scrollTop = debugDiv.scrollHeight;
-            }
-            console.log('DEBUG:', message);
-        }
-        
-        // ========== EVENT LISTENERS ==========
-        // Prevent autofocus issues
+        // Start app
         document.addEventListener('DOMContentLoaded', function() {
-            // Remove any autofocus attributes
-            document.querySelectorAll('[autofocus]').forEach(el => {
-                el.removeAttribute('autofocus');
-            });
-            
-            // Initialize app after a short delay
-            setTimeout(initializeApp, 500);
-        });
-        
-        // Safe focus handler - only focus if nothing else is focused
-        window.addEventListener('load', function() {
-            setTimeout(function() {
-                if (!document.activeElement || document.activeElement === document.body) {
-                    const descInput = document.getElementById('description');
-                    if (descInput) descInput.focus();
-                }
-            }, 1000);
+            // Start after a short delay
+            setTimeout(init, 100);
         });
     </script>
 </body>
