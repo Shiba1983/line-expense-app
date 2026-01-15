@@ -268,7 +268,7 @@
 
     <script>
         // ========== CONFIGURATION ==========
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzdMm_IRCE1Lm5nYitPlFIg3ZQQlkJ6CiSJtA63hZZH-hV-CKU_unu7xpisfzyzhVYsTA/exec ';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbw5ou1oT_UFdCaDLdZJv9rB-X7vb-0qUStxGx7kuIY63y5lska1_HM3kxKEPuI65xTA/exec';
         const LIFF_ID = '2008858986-uLQlNN1S';
         
         // ========== APP STATE ==========
@@ -292,7 +292,9 @@
                 console.log('✅ Participants loaded:', participantsList);
                 
                 // Set today's date
-                document.getElementById('date').valueAsDate = new Date();
+                const today = new Date();
+                const formattedDate = today.toISOString().split('T')[0];
+                document.getElementById('date').value = formattedDate;
                 
                 // Show the main app
                 document.getElementById('loading').style.display = 'none';
@@ -300,17 +302,12 @@
                 
                 console.log('✅ App initialized successfully');
                 
-                // Set focus safely
-                setTimeout(() => {
-                    const descriptionInput = document.getElementById('description');
-                    if (descriptionInput && !document.activeElement || document.activeElement === document.body) {
-                        descriptionInput.focus();
-                    }
-                }, 300);
-                
             } catch (error) {
                 console.error('❌ Initialize error:', error);
                 showError('Failed to initialize: ' + error.message);
+                // Show app anyway for testing
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
             }
         }
         
@@ -318,17 +315,21 @@
         async function loadParticipants() {
             try {
                 console.log('Fetching participants from API...');
-                const response = await fetch(API_URL + '?action=getParticipants&timestamp=' + Date.now());
+                // Add cache busting
+                const response = await fetch(API_URL + '?action=getParticipants&_=' + Date.now());
                 console.log('Response status:', response.status);
                 
                 const data = await response.json();
                 console.log('API Response:', data);
                 
                 if (data.error) {
-                    throw new Error(data.error);
+                    console.warn('API returned error:', data.error);
+                    // Continue with empty list
+                    participantsList = data.participants || [];
+                } else {
+                    participantsList = data.participants || [];
                 }
                 
-                participantsList = data.participants || [];
                 console.log('Participants list set to:', participantsList);
                 
                 // Update ALL UI components
@@ -371,6 +372,11 @@
                 paidBySelect.appendChild(option);
             });
             
+            // Select first participant by default
+            if (participantsList.length > 0) {
+                paidBySelect.value = participantsList[0];
+            }
+            
             console.log('✅ Paid By dropdown updated with', participantsList.length, 'options');
         }
         
@@ -378,22 +384,29 @@
         function updateParticipantCheckboxes() {
             console.log('Updating checkboxes with:', participantsList);
             const container = document.getElementById('participantsContainer');
+            
+            if (!container) {
+                console.error('participantsContainer element not found!');
+                return;
+            }
+            
             container.innerHTML = '';
             
             if (participantsList.length === 0) {
-                container.innerHTML = '<p style="grid-column: span 2; text-align: center; color: #666;">No participants available. Add some in Manage Participants.</p>';
+                container.innerHTML = '<p style="grid-column: span 2; text-align: center; color: #666; padding: 20px;">No participants available. Add some in Manage Participants.</p>';
                 console.log('No participants available for checkboxes');
                 return;
             }
             
             participantsList.forEach(person => {
-                const safeId = person.replace(/[^a-zA-Z0-9]/g, '_');
+                // Create safe ID without special characters
+                const safeId = 'checkbox_' + person.replace(/[^a-zA-Z0-9]/g, '_');
                 const div = document.createElement('div');
                 div.className = 'participant-checkbox';
                 div.innerHTML = `
-                    <input type="checkbox" id="checkbox_${safeId}" 
-                           value="${person.replace(/"/g, '&quot;')}" checked>
-                    <label for="checkbox_${safeId}" style="margin:0; cursor:pointer;">
+                    <input type="checkbox" id="${safeId}" 
+                           value="${person}" checked>
+                    <label for="${safeId}" style="margin:0; cursor:pointer;">
                         ${person}
                     </label>
                 `;
@@ -416,6 +429,7 @@
             if (participantsList && participantsList.length > 0) {
                 let html = '';
                 participantsList.forEach(participant => {
+                    // Escape quotes in participant name
                     const safeName = participant.replace(/'/g, "\\'").replace(/"/g, '&quot;');
                     html += `
                         <div class="participant-item">
@@ -429,7 +443,7 @@
                 listDiv.innerHTML = html;
                 console.log('✅ Participant list display updated with', participantsList.length, 'items');
             } else {
-                listDiv.innerHTML = '<p style="text-align: center; color: #666;">No participants yet. Add one above!</p>';
+                listDiv.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No participants yet. Add one above!</p>';
                 console.log('No participants to display');
             }
         }
@@ -488,8 +502,6 @@
             console.log('Going back to expense tracker');
             document.getElementById('participantManager').style.display = 'none';
             document.getElementById('app').style.display = 'block';
-            // Update checkboxes when returning
-            updateParticipantCheckboxes();
         }
         
         async function addNewParticipant() {
@@ -499,6 +511,11 @@
             
             if (!newName) {
                 showError('Please enter a name');
+                return;
+            }
+            
+            if (newName.length > 50) {
+                showError('Name is too long (max 50 characters)');
                 return;
             }
             
@@ -537,6 +554,11 @@
                     updateParticipantListDisplay();
                     
                     showSuccess(result.message);
+                    
+                    // Switch back to expense tracker after successful add
+                    setTimeout(() => {
+                        goBackToExpense();
+                    }, 1500);
                 } else {
                     showError(result.message || 'Failed to add participant');
                 }
@@ -553,7 +575,7 @@
         // ========== SUBMIT EXPENSE ==========
         async function submitExpense() {
             const category = document.getElementById('category').value;
-            const description = document.getElementById('description').value;
+            const description = document.getElementById('description').value.trim();
             const date = document.getElementById('date').value;
             const amount = document.getElementById('amount').value;
             const currency = document.getElementById('currency').value;
@@ -607,7 +629,7 @@
                 console.log('Submit expense response:', result);
                 
                 if (result.success) {
-                    showSuccess('✅ Expense added successfully!');
+                    showSuccess(result.message || '✅ Expense added successfully!');
                     // Clear form fields
                     document.getElementById('description').value = '';
                     document.getElementById('amount').value = '';
@@ -616,7 +638,7 @@
                         document.getElementById('description').focus();
                     }, 100);
                 } else {
-                    showError('Error: ' + (result.error || result.message || 'Unknown error'));
+                    showError(result.error || result.message || 'Unknown error occurred');
                 }
             } catch (error) {
                 console.error('❌ Submit expense error:', error);
@@ -633,22 +655,38 @@
         
         function showSuccess(message) {
             console.log('Success:', message);
-            const div = document.getElementById('successMessage');
-            div.textContent = message;
-            div.style.display = 'block';
-            document.getElementById('errorMessage').style.display = 'none';
+            const successDiv = document.getElementById('successMessage');
+            const errorDiv = document.getElementById('errorMessage');
+            
+            if (successDiv) {
+                successDiv.textContent = message;
+                successDiv.style.display = 'block';
+            }
+            
+            if (errorDiv) {
+                errorDiv.style.display = 'none';
+            }
             
             setTimeout(() => {
-                div.style.display = 'none';
+                if (successDiv) {
+                    successDiv.style.display = 'none';
+                }
             }, 3000);
         }
         
         function showError(message) {
             console.error('Error:', message);
-            const div = document.getElementById('errorMessage');
-            div.textContent = message;
-            div.style.display = 'block';
-            document.getElementById('successMessage').style.display = 'none';
+            const successDiv = document.getElementById('successMessage');
+            const errorDiv = document.getElementById('errorMessage');
+            
+            if (errorDiv) {
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+            }
+            
+            if (successDiv) {
+                successDiv.style.display = 'none';
+            }
         }
         
         function openGoogleSheet() {
@@ -666,19 +704,14 @@
             console.log('API URL:', API_URL);
             
             // Test API directly
-            fetch(API_URL + '?action=getParticipants&timestamp=' + Date.now())
+            fetch(API_URL + '?action=getParticipants&_=' + Date.now())
                 .then(r => r.json())
-                .then(data => console.log('Direct API call:', data))
+                .then(data => {
+                    console.log('Direct API call result:', data);
+                    console.log('Participants from API:', data.participants);
+                })
                 .catch(err => console.error('Direct API error:', err));
         }
-        
-        // ========== PREVENT AUTOFOCUS ISSUES ==========
-        window.addEventListener('load', function() {
-            // Remove any autofocus attributes if they exist
-            document.querySelectorAll('[autofocus]').forEach(el => {
-                el.removeAttribute('autofocus');
-            });
-        });
         
         // ========== START THE APP ==========
         document.addEventListener('DOMContentLoaded', initializeApp);
