@@ -4,9 +4,10 @@
     <title>✈️ Travel Expense Splitter</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://static.line-scdn.net https://script.google.com 'unsafe-inline';">
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             max-width: 500px;
@@ -26,6 +27,8 @@
             color: white;
             text-align: center;
             margin-bottom: 30px;
+            font-size: 24px;
+            padding: 10px;
         }
         .input-group {
             margin: 15px 0;
@@ -35,6 +38,7 @@
             margin-bottom: 8px;
             font-weight: 600;
             color: #333;
+            font-size: 14px;
         }
         input, select, button {
             width: 100%;
@@ -43,6 +47,7 @@
             border-radius: 10px;
             font-size: 16px;
             transition: all 0.3s;
+            background: white;
         }
         input:focus, select:focus {
             border-color: #667eea;
@@ -57,10 +62,16 @@
             font-size: 18px;
             cursor: pointer;
             margin-top: 20px;
+            padding: 15px;
         }
         button:hover {
             transform: translateY(-2px);
             box-shadow: 0 7px 20px rgba(0,0,0,0.2);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
         }
         .participants-grid {
             display: grid;
@@ -75,9 +86,14 @@
             background: #f5f5f5;
             border-radius: 8px;
             cursor: pointer;
+            transition: background 0.3s;
+        }
+        .participant-checkbox:hover {
+            background: #e9e9e9;
         }
         .participant-checkbox input {
-            width: auto;
+            width: 20px;
+            height: 20px;
             margin-right: 10px;
         }
         .success-message {
@@ -87,6 +103,7 @@
             border-radius: 10px;
             margin: 15px 0;
             display: none;
+            text-align: center;
         }
         .error-message {
             background: #f8d7da;
@@ -95,6 +112,7 @@
             border-radius: 10px;
             margin: 15px 0;
             display: none;
+            text-align: center;
         }
         #loading {
             text-align: center;
@@ -132,8 +150,8 @@
             background: #c82333;
         }
         .loading-spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid white;
             border-radius: 50%;
             width: 30px;
             height: 30px;
@@ -143,6 +161,15 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+        .debug-info {
+            background: rgba(0,0,0,0.1);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            color: white;
+            margin-top: 10px;
+            display: none;
         }
     </style>
 </head>
@@ -184,7 +211,7 @@
             
             <div class="input-group">
                 <label>💸 Amount</label>
-                <input type="number" id="amount" placeholder="Enter amount" step="0.01">
+                <input type="number" id="amount" placeholder="Enter amount" step="0.01" min="0">
             </div>
             
             <div class="input-group">
@@ -201,14 +228,16 @@
             <div class="input-group">
                 <label>👤 Paid By</label>
                 <select id="paidBy">
-                    <!-- Participants will be loaded here -->
+                    <option value="">Loading participants...</option>
                 </select>
             </div>
             
             <div class="input-group">
                 <label>👥 Split Between</label>
                 <div id="participantsContainer" class="participants-grid">
-                    <!-- Participants checkboxes will be loaded here -->
+                    <div style="grid-column: span 2; text-align: center; padding: 20px; color: #666;">
+                        Loading participants...
+                    </div>
                 </div>
                 <button type="button" onclick="selectAllParticipants()" 
                         style="margin-top: 10px; background: #6c757d; font-size: 14px;">
@@ -236,6 +265,10 @@
             <button onclick="openGoogleSheet()" style="background: #28a745;">
                 📋 Open Google Sheet
             </button>
+        </div>
+        
+        <div class="debug-info" id="debugInfo">
+            <!-- Debug info will appear here -->
         </div>
     </div>
     
@@ -268,7 +301,7 @@
 
     <script>
         // ========== CONFIGURATION ==========
-        const API_URL = 'https://script.google.com/macros/s/AKfycbw5ou1oT_UFdCaDLdZJv9rB-X7vb-0qUStxGx7kuIY63y5lska1_HM3kxKEPuI65xTA/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzNWXXP9cPkbzov4UduptQmCITFDEWjpULvhCmyCTGPo4A21QgKFNG787W616azGys3Cg/exec';
         const LIFF_ID = '2008858986-uLQlNN1S';
         
         // ========== APP STATE ==========
@@ -277,34 +310,44 @@
         // ========== INITIALIZE APP ==========
         async function initializeApp() {
             try {
+                console.log('=== INITIALIZING APP ===');
+                
+                // Initialize LIFF
                 console.log('1. Initializing LIFF...');
                 await liff.init({ liffId: LIFF_ID });
                 console.log('✅ LIFF initialized');
                 
+                // Check login
                 if (!liff.isLoggedIn()) {
-                    console.log('Not logged in, redirecting...');
+                    console.log('Not logged in, redirecting to login...');
                     liff.login();
                     return;
                 }
                 
-                console.log('2. Loading participants...');
-                await loadParticipants();
-                console.log('✅ Participants loaded:', participantsList);
+                // Get user profile
+                const profile = await liff.getProfile();
+                console.log('User profile:', profile.displayName);
                 
                 // Set today's date
                 const today = new Date();
                 const formattedDate = today.toISOString().split('T')[0];
                 document.getElementById('date').value = formattedDate;
                 
-                // Show the main app
+                // Load participants
+                console.log('2. Loading participants...');
+                await loadParticipants();
+                
+                // Show app
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
                 
                 console.log('✅ App initialized successfully');
+                logDebug('App initialized successfully');
                 
             } catch (error) {
                 console.error('❌ Initialize error:', error);
                 showError('Failed to initialize: ' + error.message);
+                
                 // Show app anyway for testing
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
@@ -314,34 +357,49 @@
         // ========== LOAD PARTICIPANTS ==========
         async function loadParticipants() {
             try {
-                console.log('Fetching participants from API...');
-                // Add cache busting
-                const response = await fetch(API_URL + '?action=getParticipants&_=' + Date.now());
+                console.log('=== LOADING PARTICIPANTS ===');
+                
+                // Clear current list
+                participantsList = [];
+                updateParticipantDropdowns();
+                updateParticipantCheckboxes();
+                
+                // Fetch from API
+                const timestamp = new Date().getTime();
+                const url = `${API_URL}?action=getParticipants&_=${timestamp}`;
+                console.log('Fetching from:', url);
+                
+                const response = await fetch(url);
                 console.log('Response status:', response.status);
                 
                 const data = await response.json();
                 console.log('API Response:', data);
                 
+                // Handle response
                 if (data.error) {
                     console.warn('API returned error:', data.error);
-                    // Continue with empty list
-                    participantsList = data.participants || [];
+                    showError('API Error: ' + data.error);
+                    participantsList = [];
+                } else if (data.participants && Array.isArray(data.participants)) {
+                    participantsList = data.participants;
+                    console.log('Loaded participants:', participantsList);
+                    logDebug(`Loaded ${participantsList.length} participants`);
                 } else {
-                    participantsList = data.participants || [];
+                    console.warn('Unexpected response format:', data);
+                    participantsList = [];
                 }
                 
-                console.log('Participants list set to:', participantsList);
-                
-                // Update ALL UI components
+                // Update UI
                 updateParticipantDropdowns();
                 updateParticipantCheckboxes();
                 updateParticipantListDisplay();
                 
             } catch (error) {
                 console.error('❌ Load participants error:', error);
-                showError('Could not load participants: ' + error.message);
-                // Set empty array to prevent further errors
+                showError('Network error: ' + error.message);
                 participantsList = [];
+                
+                // Update UI with empty state
                 updateParticipantDropdowns();
                 updateParticipantCheckboxes();
                 updateParticipantListDisplay();
@@ -352,8 +410,10 @@
         function updateParticipantDropdowns() {
             console.log('Updating dropdowns with:', participantsList);
             
-            // Update Paid By dropdown
             const paidBySelect = document.getElementById('paidBy');
+            if (!paidBySelect) return;
+            
+            // Clear dropdown
             paidBySelect.innerHTML = '';
             
             if (participantsList.length === 0) {
@@ -361,10 +421,11 @@
                 option.value = '';
                 option.textContent = 'No participants available';
                 paidBySelect.appendChild(option);
-                console.log('No participants available for dropdown');
+                paidBySelect.disabled = true;
                 return;
             }
             
+            // Add participants
             participantsList.forEach(person => {
                 const option = document.createElement('option');
                 option.value = person;
@@ -372,84 +433,86 @@
                 paidBySelect.appendChild(option);
             });
             
-            // Select first participant by default
-            if (participantsList.length > 0) {
-                paidBySelect.value = participantsList[0];
-            }
-            
-            console.log('✅ Paid By dropdown updated with', participantsList.length, 'options');
+            paidBySelect.disabled = false;
+            console.log('✅ Dropdown updated');
         }
         
         // ========== UPDATE PARTICIPANT CHECKBOXES ==========
         function updateParticipantCheckboxes() {
             console.log('Updating checkboxes with:', participantsList);
+            
             const container = document.getElementById('participantsContainer');
+            if (!container) return;
             
-            if (!container) {
-                console.error('participantsContainer element not found!');
-                return;
-            }
-            
+            // Clear container
             container.innerHTML = '';
             
             if (participantsList.length === 0) {
-                container.innerHTML = '<p style="grid-column: span 2; text-align: center; color: #666; padding: 20px;">No participants available. Add some in Manage Participants.</p>';
-                console.log('No participants available for checkboxes');
+                container.innerHTML = '<div style="grid-column: span 2; text-align: center; padding: 20px; color: #666;">No participants available. Add some in Manage Participants.</div>';
                 return;
             }
             
+            // Create checkbox for each participant
             participantsList.forEach(person => {
-                // Create safe ID without special characters
-                const safeId = 'checkbox_' + person.replace(/[^a-zA-Z0-9]/g, '_');
                 const div = document.createElement('div');
                 div.className = 'participant-checkbox';
-                div.innerHTML = `
-                    <input type="checkbox" id="${safeId}" 
-                           value="${person}" checked>
-                    <label for="${safeId}" style="margin:0; cursor:pointer;">
-                        ${person}
-                    </label>
-                `;
+                
+                // Create checkbox
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = 'participant_' + person.replace(/\s+/g, '_');
+                checkbox.value = person;
+                checkbox.checked = true;
+                
+                // Create label
+                const label = document.createElement('label');
+                label.htmlFor = checkbox.id;
+                label.textContent = person;
+                label.style.cssText = 'margin: 0; cursor: pointer; flex-grow: 1;';
+                
+                // Assemble
+                div.appendChild(checkbox);
+                div.appendChild(label);
                 container.appendChild(div);
             });
             
-            console.log('✅ Participant checkboxes updated');
+            console.log('✅ Checkboxes updated');
         }
         
         // ========== UPDATE PARTICIPANT LIST DISPLAY ==========
         function updateParticipantListDisplay() {
-            console.log('Updating participant list display with:', participantsList);
-            const listDiv = document.getElementById('currentParticipantsList');
+            console.log('Updating participant list display');
             
-            if (!listDiv) {
-                console.error('currentParticipantsList element not found!');
+            const listDiv = document.getElementById('currentParticipantsList');
+            if (!listDiv) return;
+            
+            if (participantsList.length === 0) {
+                listDiv.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">No participants yet. Add one above!</div>';
                 return;
             }
             
-            if (participantsList && participantsList.length > 0) {
-                let html = '';
-                participantsList.forEach(participant => {
-                    // Escape quotes in participant name
-                    const safeName = participant.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                    html += `
-                        <div class="participant-item">
-                            <span>${participant}</span>
-                            <button class="delete-btn" onclick="deleteParticipant('${safeName}')">
-                                Delete
-                            </button>
-                        </div>
-                    `;
-                });
-                listDiv.innerHTML = html;
-                console.log('✅ Participant list display updated with', participantsList.length, 'items');
-            } else {
-                listDiv.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No participants yet. Add one above!</p>';
-                console.log('No participants to display');
-            }
+            // Create participant items
+            let html = '';
+            participantsList.forEach(participant => {
+                const encodedName = encodeURIComponent(participant);
+                html += `
+                    <div class="participant-item">
+                        <span>${participant}</span>
+                        <button class="delete-btn" onclick="deleteParticipant('${encodedName}')">
+                            Delete
+                        </button>
+                    </div>
+                `;
+            });
+            
+            listDiv.innerHTML = html;
+            console.log('✅ Participant list updated');
         }
         
         // ========== DELETE PARTICIPANT ==========
-        async function deleteParticipant(participantName) {
+        async function deleteParticipant(encodedName) {
+            const participantName = decodeURIComponent(encodedName);
+            
             if (!confirm(`Are you sure you want to delete "${participantName}"?`)) {
                 return;
             }
@@ -459,9 +522,7 @@
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         action: 'deleteParticipant',
                         participantName: participantName
@@ -472,15 +533,16 @@
                 console.log('Delete response:', result);
                 
                 if (result.success) {
-                    // Update participants list from API response
+                    // Update local list
                     participantsList = result.newList || [];
                     
-                    // Update all UI components
+                    // Update UI
                     updateParticipantDropdowns();
                     updateParticipantCheckboxes();
                     updateParticipantListDisplay();
                     
                     showSuccess(result.message);
+                    logDebug(`Deleted participant: ${participantName}`);
                 } else {
                     showError(result.message || 'Failed to delete participant');
                 }
@@ -492,14 +554,12 @@
         
         // ========== PARTICIPANT MANAGEMENT FUNCTIONS ==========
         function showParticipantManager() {
-            console.log('Showing participant manager');
             document.getElementById('app').style.display = 'none';
             document.getElementById('participantManager').style.display = 'block';
             updateParticipantListDisplay();
         }
         
         function goBackToExpense() {
-            console.log('Going back to expense tracker');
             document.getElementById('participantManager').style.display = 'none';
             document.getElementById('app').style.display = 'block';
         }
@@ -514,24 +574,17 @@
                 return;
             }
             
-            if (newName.length > 50) {
-                showError('Name is too long (max 50 characters)');
-                return;
-            }
-            
             console.log('Adding new participant:', newName);
             
-            // Save original button state
+            // Disable button
+            addButton.disabled = true;
             const originalText = addButton.textContent;
             addButton.textContent = 'Adding...';
-            addButton.disabled = true;
             
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         action: 'addParticipant',
                         participantName: newName
@@ -545,17 +598,18 @@
                     // Clear input
                     newNameInput.value = '';
                     
-                    // Update participants list from API response
+                    // Update local list
                     participantsList = result.newList || [];
                     
-                    // Update all UI components
+                    // Update UI
                     updateParticipantDropdowns();
                     updateParticipantCheckboxes();
                     updateParticipantListDisplay();
                     
                     showSuccess(result.message);
+                    logDebug(`Added participant: ${newName}`);
                     
-                    // Switch back to expense tracker after successful add
+                    // Go back to expense tracker after delay
                     setTimeout(() => {
                         goBackToExpense();
                     }, 1500);
@@ -566,9 +620,9 @@
                 console.error('❌ Add participant error:', error);
                 showError('Network error. Please try again.');
             } finally {
-                // Restore button
-                addButton.textContent = originalText;
+                // Re-enable button
                 addButton.disabled = false;
+                addButton.textContent = originalText;
             }
         }
         
@@ -577,7 +631,7 @@
             const category = document.getElementById('category').value;
             const description = document.getElementById('description').value.trim();
             const date = document.getElementById('date').value;
-            const amount = document.getElementById('amount').value;
+            const amount = parseFloat(document.getElementById('amount').value);
             const currency = document.getElementById('currency').value;
             const paidBy = document.getElementById('paidBy').value;
             
@@ -590,11 +644,11 @@
                 showError('Please enter a description');
                 return;
             }
-            if (!amount || parseFloat(amount) <= 0) {
+            if (!amount || isNaN(amount) || amount <= 0) {
                 showError('Please enter a valid amount');
                 return;
             }
-            if (!paidBy || paidBy === '') {
+            if (!paidBy) {
                 showError('Please select who paid');
                 return;
             }
@@ -603,12 +657,13 @@
                 return;
             }
             
+            // Prepare data
             const expenseData = {
                 action: 'saveExpense',
                 category: category,
                 description: description,
                 date: date,
-                amount: parseFloat(amount),
+                amount: amount,
                 currency: currency,
                 paidBy: paidBy,
                 participants: selectedParticipants
@@ -619,9 +674,7 @@
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(expenseData)
                 });
                 
@@ -630,13 +683,12 @@
                 
                 if (result.success) {
                     showSuccess(result.message || '✅ Expense added successfully!');
-                    // Clear form fields
+                    
+                    // Clear form
                     document.getElementById('description').value = '';
                     document.getElementById('amount').value = '';
-                    // Set focus back to description
-                    setTimeout(() => {
-                        document.getElementById('description').focus();
-                    }, 100);
+                    
+                    logDebug(`Added expense: ${description} - ${amount} ${currency}`);
                 } else {
                     showError(result.error || result.message || 'Unknown error occurred');
                 }
@@ -654,7 +706,6 @@
         }
         
         function showSuccess(message) {
-            console.log('Success:', message);
             const successDiv = document.getElementById('successMessage');
             const errorDiv = document.getElementById('errorMessage');
             
@@ -668,14 +719,11 @@
             }
             
             setTimeout(() => {
-                if (successDiv) {
-                    successDiv.style.display = 'none';
-                }
+                if (successDiv) successDiv.style.display = 'none';
             }, 3000);
         }
         
         function showError(message) {
-            console.error('Error:', message);
             const successDiv = document.getElementById('successMessage');
             const errorDiv = document.getElementById('errorMessage');
             
@@ -687,6 +735,10 @@
             if (successDiv) {
                 successDiv.style.display = 'none';
             }
+            
+            setTimeout(() => {
+                if (errorDiv) errorDiv.style.display = 'none';
+            }, 5000);
         }
         
         function openGoogleSheet() {
@@ -698,23 +750,37 @@
             }
         }
         
-        // ========== DEBUG FUNCTIONS ==========
-        function debugParticipants() {
-            console.log('Current participantsList:', participantsList);
-            console.log('API URL:', API_URL);
-            
-            // Test API directly
-            fetch(API_URL + '?action=getParticipants&_=' + Date.now())
-                .then(r => r.json())
-                .then(data => {
-                    console.log('Direct API call result:', data);
-                    console.log('Participants from API:', data.participants);
-                })
-                .catch(err => console.error('Direct API error:', err));
+        function logDebug(message) {
+            const debugDiv = document.getElementById('debugInfo');
+            if (debugDiv) {
+                const timestamp = new Date().toLocaleTimeString();
+                debugDiv.innerHTML += `<div>${timestamp}: ${message}</div>`;
+                debugDiv.scrollTop = debugDiv.scrollHeight;
+            }
+            console.log('DEBUG:', message);
         }
         
-        // ========== START THE APP ==========
-        document.addEventListener('DOMContentLoaded', initializeApp);
+        // ========== EVENT LISTENERS ==========
+        // Prevent autofocus issues
+        document.addEventListener('DOMContentLoaded', function() {
+            // Remove any autofocus attributes
+            document.querySelectorAll('[autofocus]').forEach(el => {
+                el.removeAttribute('autofocus');
+            });
+            
+            // Initialize app after a short delay
+            setTimeout(initializeApp, 500);
+        });
+        
+        // Safe focus handler - only focus if nothing else is focused
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                if (!document.activeElement || document.activeElement === document.body) {
+                    const descInput = document.getElementById('description');
+                    if (descInput) descInput.focus();
+                }
+            }, 1000);
+        });
     </script>
 </body>
 </html>
