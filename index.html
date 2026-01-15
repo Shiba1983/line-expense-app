@@ -131,12 +131,26 @@
         .delete-btn:hover {
             background: #c82333;
         }
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
     <h1>✈️ Travel Expense Splitter</h1>
     
     <div id="loading" class="card">
+        <div class="loading-spinner"></div>
         <p>Loading your expense tracker...</p>
     </div>
     
@@ -254,7 +268,7 @@
 
     <script>
         // ========== CONFIGURATION ==========
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxaYksLQ4XGuY-qRTfoTP0Aoo5YbAUKL75raTT9eh1XWt45JjKvF59IgsbocnM88K41tg/exec ';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzdMm_IRCE1Lm5nYitPlFIg3ZQQlkJ6CiSJtA63hZZH-hV-CKU_unu7xpisfzyzhVYsTA/exec ';
         const LIFF_ID = '2008858986-uLQlNN1S';
         
         // ========== APP STATE ==========
@@ -286,6 +300,14 @@
                 
                 console.log('✅ App initialized successfully');
                 
+                // Set focus safely
+                setTimeout(() => {
+                    const descriptionInput = document.getElementById('description');
+                    if (descriptionInput && !document.activeElement || document.activeElement === document.body) {
+                        descriptionInput.focus();
+                    }
+                }, 300);
+                
             } catch (error) {
                 console.error('❌ Initialize error:', error);
                 showError('Failed to initialize: ' + error.message);
@@ -296,7 +318,7 @@
         async function loadParticipants() {
             try {
                 console.log('Fetching participants from API...');
-                const response = await fetch(API_URL + '?action=getParticipants');
+                const response = await fetch(API_URL + '?action=getParticipants&timestamp=' + Date.now());
                 console.log('Response status:', response.status);
                 
                 const data = await response.json();
@@ -309,13 +331,19 @@
                 participantsList = data.participants || [];
                 console.log('Participants list set to:', participantsList);
                 
-                // Update UI
+                // Update ALL UI components
                 updateParticipantDropdowns();
+                updateParticipantCheckboxes();
                 updateParticipantListDisplay();
                 
             } catch (error) {
                 console.error('❌ Load participants error:', error);
                 showError('Could not load participants: ' + error.message);
+                // Set empty array to prevent further errors
+                participantsList = [];
+                updateParticipantDropdowns();
+                updateParticipantCheckboxes();
+                updateParticipantListDisplay();
             }
         }
         
@@ -359,12 +387,13 @@
             }
             
             participantsList.forEach(person => {
+                const safeId = person.replace(/[^a-zA-Z0-9]/g, '_');
                 const div = document.createElement('div');
                 div.className = 'participant-checkbox';
                 div.innerHTML = `
-                    <input type="checkbox" id="checkbox_${person}" 
-                           value="${person}" checked>
-                    <label for="checkbox_${person}" style="margin:0; cursor:pointer;">
+                    <input type="checkbox" id="checkbox_${safeId}" 
+                           value="${person.replace(/"/g, '&quot;')}" checked>
+                    <label for="checkbox_${safeId}" style="margin:0; cursor:pointer;">
                         ${person}
                     </label>
                 `;
@@ -387,8 +416,7 @@
             if (participantsList && participantsList.length > 0) {
                 let html = '';
                 participantsList.forEach(participant => {
-                    // Escape quotes in participant name for JavaScript
-                    const safeName = participant.replace(/'/g, "\\'").replace(/"/g, '\\"');
+                    const safeName = participant.replace(/'/g, "\\'").replace(/"/g, '&quot;');
                     html += `
                         <div class="participant-item">
                             <span>${participant}</span>
@@ -417,6 +445,9 @@
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({
                         action: 'deleteParticipant',
                         participantName: participantName
@@ -427,8 +458,14 @@
                 console.log('Delete response:', result);
                 
                 if (result.success) {
-                    // Reload participants from API
-                    await loadParticipants();
+                    // Update participants list from API response
+                    participantsList = result.newList || [];
+                    
+                    // Update all UI components
+                    updateParticipantDropdowns();
+                    updateParticipantCheckboxes();
+                    updateParticipantListDisplay();
+                    
                     showSuccess(result.message);
                 } else {
                     showError(result.message || 'Failed to delete participant');
@@ -451,7 +488,7 @@
             console.log('Going back to expense tracker');
             document.getElementById('participantManager').style.display = 'none';
             document.getElementById('app').style.display = 'block';
-            // Also update checkboxes when returning
+            // Update checkboxes when returning
             updateParticipantCheckboxes();
         }
         
@@ -475,6 +512,9 @@
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({
                         action: 'addParticipant',
                         participantName: newName
@@ -488,7 +528,7 @@
                     // Clear input
                     newNameInput.value = '';
                     
-                    // Update participants list from API
+                    // Update participants list from API response
                     participantsList = result.newList || [];
                     
                     // Update all UI components
@@ -532,6 +572,10 @@
                 showError('Please enter a valid amount');
                 return;
             }
+            if (!paidBy || paidBy === '') {
+                showError('Please select who paid');
+                return;
+            }
             if (selectedParticipants.length === 0) {
                 showError('Please select at least one participant');
                 return;
@@ -553,6 +597,9 @@
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify(expenseData)
                 });
                 
@@ -564,8 +611,12 @@
                     // Clear form fields
                     document.getElementById('description').value = '';
                     document.getElementById('amount').value = '';
+                    // Set focus back to description
+                    setTimeout(() => {
+                        document.getElementById('description').focus();
+                    }, 100);
                 } else {
-                    showError('Error: ' + (result.error || 'Unknown error'));
+                    showError('Error: ' + (result.error || result.message || 'Unknown error'));
                 }
             } catch (error) {
                 console.error('❌ Submit expense error:', error);
@@ -608,6 +659,26 @@
                 window.open(sheetUrl, '_blank');
             }
         }
+        
+        // ========== DEBUG FUNCTIONS ==========
+        function debugParticipants() {
+            console.log('Current participantsList:', participantsList);
+            console.log('API URL:', API_URL);
+            
+            // Test API directly
+            fetch(API_URL + '?action=getParticipants&timestamp=' + Date.now())
+                .then(r => r.json())
+                .then(data => console.log('Direct API call:', data))
+                .catch(err => console.error('Direct API error:', err));
+        }
+        
+        // ========== PREVENT AUTOFOCUS ISSUES ==========
+        window.addEventListener('load', function() {
+            // Remove any autofocus attributes if they exist
+            document.querySelectorAll('[autofocus]').forEach(el => {
+                el.removeAttribute('autofocus');
+            });
+        });
         
         // ========== START THE APP ==========
         document.addEventListener('DOMContentLoaded', initializeApp);
