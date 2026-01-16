@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>✈️ Travel Expense Splitter</title>
+    <title>Travel Expense Splitter</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -115,25 +115,26 @@
             <h2>➕ Add New Expense</h2>
             
             <div class="input-group">
-                <label>💰 Category</label>
+                <label>Category</label>
                 <select id="category">
-                    <option value="Food">🍔 Food & Drinks</option>
-                    <option value="Transport">🚗 Transportation</option>
-                    <option value="Accommodation">🏨 Accommodation</option>
-                    <option value="Activities">🎡 Activities</option>
-                    <option value="Shopping">🛍️ Shopping</option>
-                    <option value="Alcohol">🍺 Alcohol</option>
-                    <option value="Other">📝 Other</option>
+                    <option value="Food">Food & Drinks</option>
+                    <option value="Restaurant">Restaurant</option>
+                    <option value="Transport">Transportation</option>
+                    <option value="Accommodation">Accommodation</option>
+                    <option value="Activities">Activities</option>
+                    <option value="Shopping">Shopping</option>
+                    <option value="Alcohol">Alcohol</option>
+                    <option value="Other">Other</option>
                 </select>
             </div>
             
             <div class="input-group">
-                <label>📝 Description / Item</label>
+                <label>Description / Item</label>
                 <input type="text" id="description" placeholder="What was it? (e.g., Beach dinner, Taxi to hotel)">
             </div>
             
             <div class="input-group">
-                <label>📅 Date</label>
+                <label>Date</label>
                 <input type="date" id="date">
             </div>
             
@@ -145,23 +146,23 @@
             <div class="input-group">
                 <label>🌐 Currency</label>
                 <select id="currency">
-                    <option value="THB">🇹🇭 THB (Baht)</option>
-                    <option value="USD">🇺🇸 USD (Dollar)</option>
-                    <option value="EUR">🇪🇺 EUR (Euro)</option>
-                    <option value="JPY">🇯🇵 JPY (Yen)</option>
-                    <option value="GBP">🇬🇧 GBP (Pound)</option>
+                    <option value="THB">THB (Baht)</option>
+                    <option value="JPY">JPY (Yen)</option>
+                    <option value="USD">USD (Dollar)</option>
+                    <option value="EUR">EUR (Euro)</option>
+                    <option value="GBP">GBP (Pound)</option>
                 </select>
             </div>
             
             <div class="input-group">
-                <label>👤 Paid By</label>
+                <label>Paid By</label>
                 <select id="paidBy">
                     <!-- Participants will be loaded here -->
                 </select>
             </div>
             
             <div class="input-group">
-                <label>👥 Split Between</label>
+                <label>Split Between</label>
                 <div id="participantsContainer" class="participants-grid">
                     <!-- Participants checkboxes will be loaded here -->
                 </div>
@@ -178,13 +179,13 @@
         </div>
         
         <div class="card">
-            <h2>📊 How It Works</h2>
-            <p>✅ All expenses saved to your shared Google Sheet</p>
-            <p>✅ Automatically converted to THB (if needed)</p>
-            <p>✅ Split between selected people</p>
-            <p>✅ Added to debt calculations</p>
+            <h2>Manual</h2>
+            <p> All expenses saved to your shared Google Sheet</p>
+            <p> Automatically converted to THB (if needed)</p>
+            <p> Split between selected people</p>
+            <p> Added to debt calculations</p>
             <button onclick="openGoogleSheet()" style="background: #28a745;">
-                📋 Open Google Sheet
+                 Open Google Sheet
             </button>
         </div>
     </div>
