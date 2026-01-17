@@ -506,124 +506,310 @@
             checkboxes.forEach(cb => cb.checked = true);
         }
         
-        // ========== SETTLEMENT FUNCTIONS ==========
-        async function loadSettlementStatus() {
-            try {
-                if (!SETTLEMENT_API_URL.includes('http')) {
-                    document.getElementById('statusText').textContent = 'Set settlement URL in config';
-                    return;
-                }
-                
-                const response = await fetch(`${SETTLEMENT_API_URL}?action=status`);
-                const data = await response.json();
-                
-                document.getElementById('spreadsheetName').textContent = data.spreadsheet || 'Unknown';
-                document.getElementById('currencyStatus').textContent = data.currency || 'Not set';
-                document.getElementById('statusText').textContent = data.status || 'Ready';
-                
-            } catch (error) {
-                console.error('Status load error:', error);
-                document.getElementById('statusText').textContent = 'Error loading status';
-            }
-        }
+// ========== SETTLEMENT FUNCTIONS - UPDATED ==========
+async function loadSettlementStatus() {
+  try {
+    if (!SETTLEMENT_API_URL.includes('http')) {
+      document.getElementById('statusText').textContent = 'Set settlement URL in config';
+      return;
+    }
+    
+    console.log("Loading settlement status...");
+    const response = await fetch(`${SETTLEMENT_API_URL}?action=status&t=${Date.now()}`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const text = await response.text();
+    console.log("Status response text:", text);
+    
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      throw new Error(`Invalid JSON response: ${text.substring(0, 100)}`);
+    }
+    
+    console.log("Status data:", data);
+    
+    if (data.success) {
+      document.getElementById('spreadsheetName').textContent = data.spreadsheet || 'Unknown';
+      document.getElementById('currencyStatus').textContent = data.currency || 'THB';
+      document.getElementById('statusText').textContent = data.status || 'Ready';
+      document.getElementById('statusText').style.color = '#2e7d32'; // Green
+    } else {
+      document.getElementById('statusText').textContent = data.error || 'Error';
+      document.getElementById('statusText').style.color = '#c62828'; // Red
+    }
+    
+  } catch (error) {
+    console.error('Status load error:', error);
+    document.getElementById('statusText').textContent = 'Error loading status';
+    document.getElementById('statusText').style.color = '#c62828';
+  }
+}
+
+async function runSettlement() {
+  try {
+    // Show loading
+    document.getElementById('settlementLoading').style.display = 'block';
+    document.getElementById('resultCard').style.display = 'none';
+    
+    console.log("Running settlement...");
+    
+    // Add timestamp to prevent caching
+    const url = `${SETTLEMENT_API_URL}?action=settle&t=${Date.now()}`;
+    console.log("Calling URL:", url);
+    
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const text = await response.text();
+    console.log("Settlement response text:", text);
+    
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      throw new Error(`Invalid JSON response: ${text.substring(0, 100)}`);
+    }
+    
+    console.log("Settlement data:", data);
+    
+    // Hide loading
+    document.getElementById('settlementLoading').style.display = 'none';
+    
+    // Show result
+    if (data.success) {
+      showSettlementSuccess(`
+        ✅ Settlement completed successfully!<br><br>
         
-        async function runSettlement() {
-            try {
-                // Show loading
-                document.getElementById('settlementLoading').style.display = 'block';
-                document.getElementById('resultCard').style.display = 'none';
-                
-                // Call Settlement Web App
-                const response = await fetch(`${SETTLEMENT_API_URL}?action=settle`);
-                const data = await response.json();
-                
-                // Hide loading
-                document.getElementById('settlementLoading').style.display = 'none';
-                
-                // Show result
-                if (data.success) {
-                    showSettlementSuccess(`
-                        Settlement completed successfully!<br><br>
-                        
-                        📊 <strong>Summary:</strong><br>
-                        • Participants: ${data.processed.participants}<br>
-                        • Transactions: ${data.processed.transactions}<br>
-                        • Settlements: ${data.processed.settlements}<br>
-                        • Currency: ${data.currency}<br>
-                        • Duration: ${data.duration}<br><br>
-                        
-                        ✅ Results have been written to your spreadsheet.
-                    `);
-                } else {
-                    showSettlementError(data.message || 'Settlement failed');
-                }
-                
-                // Reload status
-                await loadSettlementStatus();
-                
-            } catch (error) {
-                console.error('Settlement error:', error);
-                document.getElementById('settlementLoading').style.display = 'none';
-                showSettlementError('Failed to run settlement. Please check the API URL.');
-            }
-        }
+        📊 <strong>Summary:</strong><br>
+        • Participants: ${data.processed?.participants || 0}<br>
+        • Transactions: ${data.processed?.transactions || 0}<br>
+        • Settlements: ${data.processed?.settlements || 0}<br>
+        • Currency: ${data.currency || 'THB'}<br>
+        • Duration: ${data.duration || 'N/A'}<br><br>
         
-        async function clearSettlementResults() {
-            if (!confirm('Are you sure you want to clear all settlement results?')) {
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${SETTLEMENT_API_URL}?action=clear`);
-                const data = await response.json();
-                
-                if (data.success) {
-                    showSettlementSuccess('Results cleared successfully!');
-                    await loadSettlementStatus();
-                } else {
-                    showSettlementError('Failed to clear results: ' + (data.error || 'Unknown error'));
-                }
-                
-            } catch (error) {
-                console.error('Clear error:', error);
-                showSettlementError('Failed to clear results.');
-            }
-        }
-        
-        async function refreshStatus() {
-            await loadSettlementStatus();
-            showSettlementSuccess('Status refreshed!');
-        }
-        
-        function showSettlementSuccess(message) {
-            const resultCard = document.getElementById('resultCard');
-            const resultTitle = document.getElementById('resultTitle');
-            const resultDetails = document.getElementById('resultDetails');
-            
-            resultCard.className = 'result-card';
-            resultTitle.innerHTML = '<span>✅ Success!</span>';
-            resultDetails.innerHTML = message;
-            resultCard.style.display = 'block';
-            
-            setTimeout(() => {
-                resultCard.style.display = 'none';
-            }, 5000);
-        }
-        
-        function showSettlementError(message) {
-            const resultCard = document.getElementById('resultCard');
-            const resultTitle = document.getElementById('resultTitle');
-            const resultDetails = document.getElementById('resultDetails');
-            
-            resultCard.className = 'result-card error';
-            resultTitle.innerHTML = '<span>❌ Error!</span>';
-            resultDetails.textContent = message;
-            resultCard.style.display = 'block';
-            
-            setTimeout(() => {
-                resultCard.style.display = 'none';
-            }, 5000);
-        }
+        📝 Results have been written to your Google Sheet.
+      `);
+      
+      // Show notification in LINE
+      if (liff.isInClient()) {
+        liff.sendMessages([
+          {
+            type: 'text',
+            text: `✅ Settlement completed!\n${data.processed?.settlements || 0} transactions needed.\nCheck your Google Sheet.`
+          }
+        ]).catch(e => console.log("Cannot send notification:", e));
+      }
+    } else {
+      showSettlementError(data.message || data.error || 'Settlement failed');
+    }
+    
+    // Reload status
+    setTimeout(() => {
+      loadSettlementStatus();
+    }, 1000);
+    
+  } catch (error) {
+    console.error('Settlement error:', error);
+    document.getElementById('settlementLoading').style.display = 'none';
+    
+    if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+      showSettlementError(`
+        Network error. This might be due to:<br><br>
+        1. No internet connection<br>
+        2. Google Apps Script quota exceeded<br>
+        3. CORS restrictions<br><br>
+        <strong>But your data was likely processed!</strong><br>
+        Check your Google Sheet columns AC & AD.
+      `);
+    } else {
+      showSettlementError('Error: ' + error.message);
+    }
+  }
+}
+
+async function clearSettlementResults() {
+  if (!confirm('Clear all settlement results from Google Sheet?')) {
+    return;
+  }
+  
+  try {
+    const response = await fetch(`${SETTLEMENT_API_URL}?action=clear&t=${Date.now()}`);
+    const text = await response.text();
+    const data = JSON.parse(text);
+    
+    if (data.success) {
+      showSettlementSuccess('✅ Results cleared successfully!');
+      setTimeout(() => {
+        loadSettlementStatus();
+      }, 1000);
+    } else {
+      showSettlementError('Failed to clear: ' + (data.error || 'Unknown error'));
+    }
+    
+  } catch (error) {
+    console.error('Clear error:', error);
+    showSettlementError('Failed to clear results.');
+  }
+}
+
+async function refreshStatus() {
+  document.getElementById('statusText').textContent = 'Refreshing...';
+  await loadSettlementStatus();
+  showSettlementSuccess('✅ Status refreshed!');
+}
+
+function showSettlementSuccess(message) {
+  const resultCard = document.getElementById('resultCard');
+  const resultTitle = document.getElementById('resultTitle');
+  const resultDetails = document.getElementById('resultDetails');
+  
+  if (!resultCard || !resultTitle || !resultDetails) {
+    console.error("Result card elements not found!");
+    alert(message.replace(/<[^>]*>/g, '')); // Fallback to alert
+    return;
+  }
+  
+  resultCard.className = 'result-card';
+  resultTitle.innerHTML = '<span>✅ Success!</span>';
+  resultDetails.innerHTML = message;
+  resultCard.style.display = 'block';
+  
+  // Auto-hide after 8 seconds
+  setTimeout(() => {
+    if (resultCard.style.display === 'block') {
+      resultCard.style.display = 'none';
+    }
+  }, 8000);
+}
+
+function showSettlementError(message) {
+  const resultCard = document.getElementById('resultCard');
+  const resultTitle = document.getElementById('resultTitle');
+  const resultDetails = document.getElementById('resultDetails');
+  
+  if (!resultCard || !resultTitle || !resultDetails) {
+    console.error("Result card elements not found!");
+    alert(message.replace(/<[^>]*>/g, '')); // Fallback to alert
+    return;
+  }
+  
+  resultCard.className = 'result-card error';
+  resultTitle.innerHTML = '<span>❌ Error!</span>';
+  resultDetails.innerHTML = message;
+  resultCard.style.display = 'block';
+  
+  // Auto-hide after 10 seconds
+  setTimeout(() => {
+    if (resultCard.style.display === 'block') {
+      resultCard.style.display = 'none';
+    }
+  }, 10000);
+}
+
+// ========== UPDATE INITIALIZE FUNCTION ==========
+async function initializeApp() {
+  try {
+    // 1. Initialize LIFF
+    await liff.init({ liffId: LIFF_ID });
+    
+    // 2. Check login
+    if (!liff.isLoggedIn()) {
+      liff.login();
+      return;
+    }
+    
+    // 3. Load profile for debugging
+    try {
+      const profile = await liff.getProfile();
+      console.log("LIFF user:", profile.displayName);
+    } catch (e) {
+      console.log("Cannot get profile:", e);
+    }
+    
+    // 4. Load participants
+    await loadParticipants();
+    
+    // 5. Set today's date
+    document.getElementById('date').valueAsDate = new Date();
+    
+    // 6. Load settlement status with retry
+    await loadSettlementStatus();
+    
+    // 7. Show the app
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    
+    console.log("LIFF app initialized successfully");
+    
+  } catch (error) {
+    console.error('Initialize error:', error);
+    document.getElementById('loading').innerHTML = `
+      <h3>Error Loading App</h3>
+      <p>${error.message}</p>
+      <button onclick="location.reload()">Retry</button>
+    `;
+  }
+}
+
+// ========== ADD DEBUG BUTTONS ==========
+// Add these debug functions to help troubleshoot
+
+async function debugSettlementAPI() {
+  const url = `${SETTLEMENT_API_URL}?action=status&t=${Date.now()}`;
+  console.log("Testing URL:", url);
+  
+  try {
+    const response = await fetch(url);
+    console.log("Response status:", response.status);
+    const text = await response.text();
+    console.log("Response text:", text);
+    
+    try {
+      const json = JSON.parse(text);
+      console.log("Parsed JSON:", json);
+      alert(`API Status: ${json.success ? 'OK' : 'Error'}\nMessage: ${json.message || json.error}`);
+    } catch (e) {
+      console.log("Not JSON:", e.message);
+      alert("Response is not JSON:\n" + text.substring(0, 200));
+    }
+  } catch (error) {
+    console.error("Fetch error:", error);
+    alert("Fetch error: " + error.message);
+  }
+}
+
+async function testSettlementDirectly() {
+  const url = `${SETTLEMENT_API_URL}?action=settle&t=${Date.now()}`;
+  console.log("Direct test URL:", url);
+  
+  try {
+    const response = await fetch(url);
+    const text = await response.text();
+    console.log("Direct response:", text);
+    
+    try {
+      const json = JSON.parse(text);
+      alert(`Direct test: ${json.success ? 'SUCCESS' : 'FAILED'}\n${json.message || json.error}`);
+    } catch (e) {
+      alert("Direct test response:\n" + text.substring(0, 300));
+    }
+  } catch (error) {
+    console.error("Direct test error:", error);
+    alert("Direct test error: " + error.message);
+  }
+}
+
+// Add debug buttons to your HTML temporarily:
+// <button onclick="debugSettlementAPI()">🔧 Debug API</button>
+// <button onclick="testSettlementDirectly()">🧪 Test Direct</button>
         
         // ========== COMMON FUNCTIONS ==========
         function showSuccess(message) {
