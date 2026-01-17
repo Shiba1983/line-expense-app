@@ -1,840 +1,157 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>✈️ Travel Expense Splitter</title>
+    <title>💰 Expense Settlement</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        * { box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: Arial, sans-serif;
             max-width: 500px;
             margin: 0 auto;
             padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            background: #f5f5f5;
         }
-        .card {
+        .container {
             background: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin: 15px 0;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         h1 {
-            color: white;
+            color: #333;
             text-align: center;
-            margin-bottom: 30px;
-        }
-        h2 {
-            color: #333;
-            margin-top: 0;
-            margin-bottom: 20px;
-            font-size: 20px;
-        }
-        .input-group {
-            margin: 15px 0;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-        }
-        input, select, button {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-        input:focus, select:focus {
-            border-color: #667eea;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
         button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            background: #4CAF50;
             color: white;
             border: none;
-            font-weight: bold;
-            font-size: 18px;
+            border-radius: 5px;
+            font-size: 16px;
             cursor: pointer;
-            margin-top: 20px;
         }
         button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 7px 20px rgba(0,0,0,0.2);
+            background: #45a049;
         }
-        .participants-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+        .result {
+            padding: 15px;
             margin: 10px 0;
+            border-radius: 5px;
+            display: none;
         }
-        .participant-checkbox {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            background: #f5f5f5;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        .participant-checkbox input {
-            width: auto;
-            margin-right: 10px;
-        }
-        .success-message {
+        .success {
             background: #d4edda;
             color: #155724;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            display: none;
+            border: 1px solid #c3e6cb;
         }
-        .error-message {
+        .error {
             background: #f8d7da;
             color: #721c24;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            display: none;
-        }
-        #loading {
-            text-align: center;
-            padding: 40px;
-            color: white;
-        }
-        
-        /* New styles for settlement section */
-        .status-card {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-left: 4px solid #4CAF50;
-        }
-        .status-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-        .status-label {
-            color: #666;
-        }
-        .status-value {
-            font-weight: 600;
-            color: #333;
-        }
-        .settlement-loading {
-            text-align: center;
-            margin: 20px 0;
-            display: none;
-        }
-        .spinner {
-            width: 30px;
-            height: 30px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .result-card {
-            background: #e8f5e9;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 15px;
-            display: none;
-        }
-        .result-card.error {
-            background: #ffebee;
-        }
-        .button-secondary {
-            background: #6c757d;
-            margin-top: 10px;
-        }
-        .button-success {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        }
-        .button-warning {
-            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
-        }
-        .tab-buttons {
-            display: flex;
-            margin-bottom: 20px;
-            gap: 10px;
-        }
-        .tab-button {
-            flex: 1;
-            padding: 12px;
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .tab-button.active {
-            background: white;
-            color: #667eea;
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
+            border: 1px solid #f5c6cb;
         }
     </style>
 </head>
 <body>
-    <h1>✈️ Travel Expense Splitter</h1>
-    
-    <div class="tab-buttons">
-        <button class="tab-button active" onclick="switchTab('expense')">➕ Add Expense</button>
-        <button class="tab-button" onclick="switchTab('settlement')">💰 Settlement</button>
-    </div>
-    
-    <div id="loading" class="card">
-        <p>Loading your expense tracker...</p>
-    </div>
-    
-    <div id="app" style="display: none;">
-        <!-- EXPENSE TAB -->
-        <div id="expenseTab" class="tab-content active">
-            <div class="card">
-                <h2>➕ Add New Expense</h2>
-                
-                <div class="input-group">
-                    <label>💰 Category</label>
-                    <select id="category">
-                        <option value="Food">🍔 Food & Drinks</option>
-                        <option value="Transport">🚗 Transportation</option>
-                        <option value="Accommodation">🏨 Accommodation</option>
-                        <option value="Activities">🎡 Activities</option>
-                        <option value="Shopping">🛍️ Shopping</option>
-                        <option value="Alcohol">🍺 Alcohol</option>
-                        <option value="Other">📝 Other</option>
-                    </select>
-                </div>
-                
-                <div class="input-group">
-                    <label>📝 Description / Item</label>
-                    <input type="text" id="description" placeholder="What was it? (e.g., Beach dinner, Taxi to hotel)">
-                </div>
-                
-                <div class="input-group">
-                    <label>📅 Date</label>
-                    <input type="date" id="date">
-                </div>
-                
-                <div class="input-group">
-                    <label>💸 Amount</label>
-                    <input type="number" id="amount" placeholder="Enter amount" step="0.01">
-                </div>
-                
-                <div class="input-group">
-                    <label>🌐 Currency</label>
-                    <select id="currency">
-                        <option value="THB">🇹🇭 THB (Baht)</option>
-                        <option value="USD">🇺🇸 USD (Dollar)</option>
-                        <option value="EUR">🇪🇺 EUR (Euro)</option>
-                        <option value="JPY">🇯🇵 JPY (Yen)</option>
-                        <option value="GBP">🇬🇧 GBP (Pound)</option>
-                    </select>
-                </div>
-                
-                <div class="input-group">
-                    <label>👤 Paid By</label>
-                    <select id="paidBy">
-                        <!-- Participants will be loaded here -->
-                    </select>
-                </div>
-                
-                <div class="input-group">
-                    <label>👥 Split Between</label>
-                    <div id="participantsContainer" class="participants-grid">
-                        <!-- Participants checkboxes will be loaded here -->
-                    </div>
-                    <button type="button" onclick="selectAllParticipants()" 
-                            style="margin-top: 10px; background: #6c757d; font-size: 14px;">
-                        Select All
-                    </button>
-                </div>
-                
-                <button onclick="submitExpense()">➕ Add Expense</button>
-                
-                <div id="successMessage" class="success-message"></div>
-                <div id="errorMessage" class="error-message"></div>
-            </div>
+    <div class="container">
+        <h1>💰 Expense Settlement</h1>
+        
+        <div id="status">
+            <p>Click the button to run settlement calculation.</p>
         </div>
         
-        <!-- SETTLEMENT TAB -->
-        <div id="settlementTab" class="tab-content">
-            <div class="card">
-                <h2>💰 Settlement Calculator</h2>
-                
-                <div class="status-card">
-                    <div class="status-item">
-                        <span class="status-label">Spreadsheet:</span>
-                        <span class="status-value" id="spreadsheetName">Loading...</span>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-label">Currency:</span>
-                        <span class="status-value" id="currencyStatus">Loading...</span>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-label">Status:</span>
-                        <span class="status-value" id="statusText">Loading...</span>
-                    </div>
-                </div>
-                
-                <div class="settlement-loading" id="settlementLoading">
-                    <div class="spinner"></div>
-                    <p>Calculating settlements...</p>
-                </div>
-                
-                <button onclick="runSettlement()" class="button-success">
-                    ⚡ Run Settlement Now
-                </button>
-                
-                <button onclick="clearSettlementResults()" class="button-warning">
-                    🗑️ Clear Results
-                </button>
-                
-                <button onclick="refreshStatus()" class="button-secondary">
-                    🔄 Refresh Status
-                </button>
-                
-                <div class="result-card" id="resultCard">
-                    <div class="result-title" id="resultTitle">
-                        <span>✅ Success!</span>
-                    </div>
-                    <div class="result-details" id="resultDetails"></div>
-                </div>
-            </div>
-            
-            <div class="card">
-                <h2>📊 How It Works</h2>
-                <p>✅ All expenses saved to your shared Google Sheet</p>
-                <p>✅ Automatically converted to THB (if needed)</p>
-                <p>✅ Split between selected people</p>
-                <p>✅ Added to debt calculations</p>
-                <p>✅ Run settlement to see who owes whom</p>
-                <button onclick="openGoogleSheet()" style="background: #28a745;">
-                    📋 Open Google Sheet
-                </button>
-            </div>
+        <button onclick="runSettlement()" id="settleBtn">
+            ⚡ Run Settlement Now
+        </button>
+        
+        <button onclick="checkSheet()" style="background: #2196F3;">
+            📋 Check Google Sheet
+        </button>
+        
+        <div class="loading" id="loading">
+            <p>Processing settlement...</p>
+        </div>
+        
+        <div class="result" id="result"></div>
+        
+        <div style="margin-top: 20px; font-size: 12px; color: #666;">
+            <p>Results will appear in columns AC & AD of your Google Sheet.</p>
         </div>
     </div>
 
     <script>
-        // ========== CONFIGURATION ==========
-        // ⚠️ UPDATE THESE WITH YOUR OWN VALUES ⚠️
-        const EXPENSE_API_URL = 'https://script.google.com/macros/s/AKfycbyg3rG7YlRU_lYqM0vCL37QSWCGcLV6stNJzLlg_BRsAA2hkJsWnWLDY4YybfXKPPWcXg/exec';
-        const SETTLEMENT_API_URL = 'https://script.google.com/macros/s/AKfycbyqEYYi8pY2oxrNDbxc0JCJEdbLC9Iqd-QTGHgHODtKf3bLzy2pAwCjqKU_i44zldcFpA/exec'; // From Part 1 deployment
-        const LIFF_ID = '2008858986-uLQlNN1S'; // Your LIFF ID
+        // SETTLEMENT API URL - USE YOURS
+        const SETTLEMENT_URL = 'https://script.google.com/macros/s/AKfycbyqEYYi8pY2oxrNDbxc0JCJEdbLC9Iqd-QTGHgHODtKf3bLzy2pAwCjqKU_i44zldcFpA/exec';
+        const LIFF_ID = '2008858986-uLQlNN1S';
         
-        // ========== APP STATE ==========
-        let participantsList = [];
-        let currentTab = 'expense';
-        
-        // ========== INITIALIZE APP ==========
-        async function initializeApp() {
+        // Initialize LIFF
+        async function initialize() {
             try {
-                // 1. Initialize LIFF
                 await liff.init({ liffId: LIFF_ID });
                 
-                // 2. Check login
                 if (!liff.isLoggedIn()) {
                     liff.login();
                     return;
                 }
                 
-                // 3. Load participants from Google Sheets
-                await loadParticipants();
+                console.log("LIFF initialized");
                 
-                // 4. Set today's date for expense form
-                document.getElementById('date').valueAsDate = new Date();
+            } catch (error) {
+                console.error("LIFF init error:", error);
+                showError("LIFF Error: " + error.message);
+            }
+        }
+        
+        // Run settlement
+        async function runSettlement() {
+            try {
+                // Show loading
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('result').style.display = 'none';
                 
-                // 5. Load settlement status
-                await loadSettlementStatus();
+                // Create a unique URL to avoid caching
+                const url = SETTLEMENT_URL + '?action=doSettlement&t=' + Date.now();
+                console.log("Calling:", url);
                 
-                // 6. Show the app
+                // Make the request
+                const response = await fetch(url);
+                const text = await response.text();
+                
+                console.log("Response:", text);
+                
+                // Hide loading
                 document.getElementById('loading').style.display = 'none';
-                document.getElementById('app').style.display = 'block';
                 
-            } catch (error) {
-                showError('Failed to initialize: ' + error.message);
-            }
-        }
-        
-        // ========== TAB SWITCHING ==========
-        function switchTab(tabName) {
-            // Update tab buttons
-            document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.textContent.includes(tabName === 'expense' ? 'Add Expense' : 'Settlement')) {
-                    btn.classList.add('active');
-                }
-            });
-            
-            // Update tab content
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            
-            if (tabName === 'expense') {
-                document.getElementById('expenseTab').classList.add('active');
-            } else {
-                document.getElementById('settlementTab').classList.add('active');
-            }
-            
-            currentTab = tabName;
-        }
-        
-        // ========== EXPENSE FUNCTIONS ==========
-        async function loadParticipants() {
-            try {
-                const response = await fetch(EXPENSE_API_URL + '?action=getParticipants');
-                const data = await response.json();
-                
-                if (!data.participants) {
-                    throw new Error('No participants found');
+                try {
+                    const data = JSON.parse(text);
+                    
+                    if (data.success) {
+                        showSuccess(data.message || "Settlement completed!");
+                    } else {
+                        showError(data.error || data.message || "Unknown error");
+                    }
+                } catch (e) {
+                    // If not JSON, show raw response
+                    showError("Response: " + text.substring(0, 200));
                 }
                 
-                participantsList = data.participants;
-                
-                // Populate Paid By dropdown
-                const paidBySelect = document.getElementById('paidBy');
-                paidBySelect.innerHTML = '';
-                participantsList.forEach(person => {
-                    const option = document.createElement('option');
-                    option.value = person;
-                    option.textContent = person;
-                    paidBySelect.appendChild(option);
-                });
-                
-                // Create participant checkboxes
-                const container = document.getElementById('participantsContainer');
-                container.innerHTML = '';
-                participantsList.forEach(person => {
-                    const div = document.createElement('div');
-                    div.className = 'participant-checkbox';
-                    div.innerHTML = `
-                        <input type="checkbox" id="participant_${person}" 
-                               value="${person}" checked>
-                        <label for="participant_${person}" style="margin:0; cursor:pointer;">
-                            ${person}
-                        </label>
-                    `;
-                    container.appendChild(div);
-                });
-                
             } catch (error) {
-                showError('Could not load participants: ' + error.message);
+                console.error("Settlement error:", error);
+                document.getElementById('loading').style.display = 'none';
+                showError("Network error. Check console.");
             }
         }
         
-        async function submitExpense() {
-            const category = document.getElementById('category').value;
-            const description = document.getElementById('description').value;
-            const date = document.getElementById('date').value;
-            const amount = document.getElementById('amount').value;
-            const currency = document.getElementById('currency').value;
-            const paidBy = document.getElementById('paidBy').value;
-            
-            // Get selected participants
-            const checkboxes = document.querySelectorAll('#participantsContainer input[type="checkbox"]:checked');
-            const selectedParticipants = Array.from(checkboxes).map(cb => cb.value);
-            
-            // Validation
-            if (!description) {
-                showError('Please enter a description');
-                return;
-            }
-            if (!amount || parseFloat(amount) <= 0) {
-                showError('Please enter a valid amount');
-                return;
-            }
-            if (selectedParticipants.length === 0) {
-                showError('Please select at least one participant');
-                return;
-            }
-            
-            const expenseData = {
-                action: 'saveExpense',
-                category: category,
-                description: description,
-                date: date,
-                amount: parseFloat(amount),
-                currency: currency,
-                paidBy: paidBy,
-                participants: selectedParticipants
-            };
-            
-            try {
-                const response = await fetch(EXPENSE_API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(expenseData)
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    showSuccess('✅ Expense added successfully!');
-                    // Clear form fields
-                    document.getElementById('description').value = '';
-                    document.getElementById('amount').value = '';
-                } else {
-                    showError('Error: ' + (result.error || 'Unknown error'));
-                }
-            } catch (error) {
-                showError('Network error. Please try again.');
-            }
-        }
-        
-        function selectAllParticipants() {
-            const checkboxes = document.querySelectorAll('#participantsContainer input[type="checkbox"]');
-            checkboxes.forEach(cb => cb.checked = true);
-        }
-        
-// ========== SETTLEMENT FUNCTIONS - UPDATED ==========
-async function loadSettlementStatus() {
-  try {
-    if (!SETTLEMENT_API_URL.includes('http')) {
-      document.getElementById('statusText').textContent = 'Set settlement URL in config';
-      return;
-    }
-    
-    console.log("Loading settlement status...");
-    const response = await fetch(`${SETTLEMENT_API_URL}?action=status&t=${Date.now()}`);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const text = await response.text();
-    console.log("Status response text:", text);
-    
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (e) {
-      throw new Error(`Invalid JSON response: ${text.substring(0, 100)}`);
-    }
-    
-    console.log("Status data:", data);
-    
-    if (data.success) {
-      document.getElementById('spreadsheetName').textContent = data.spreadsheet || 'Unknown';
-      document.getElementById('currencyStatus').textContent = data.currency || 'THB';
-      document.getElementById('statusText').textContent = data.status || 'Ready';
-      document.getElementById('statusText').style.color = '#2e7d32'; // Green
-    } else {
-      document.getElementById('statusText').textContent = data.error || 'Error';
-      document.getElementById('statusText').style.color = '#c62828'; // Red
-    }
-    
-  } catch (error) {
-    console.error('Status load error:', error);
-    document.getElementById('statusText').textContent = 'Error loading status';
-    document.getElementById('statusText').style.color = '#c62828';
-  }
-}
-
-async function runSettlement() {
-  try {
-    // Show loading
-    document.getElementById('settlementLoading').style.display = 'block';
-    document.getElementById('resultCard').style.display = 'none';
-    
-    console.log("Running settlement...");
-    
-    // Add timestamp to prevent caching
-    const url = `${SETTLEMENT_API_URL}?action=settle&t=${Date.now()}`;
-    console.log("Calling URL:", url);
-    
-    const response = await fetch(url);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const text = await response.text();
-    console.log("Settlement response text:", text);
-    
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (e) {
-      throw new Error(`Invalid JSON response: ${text.substring(0, 100)}`);
-    }
-    
-    console.log("Settlement data:", data);
-    
-    // Hide loading
-    document.getElementById('settlementLoading').style.display = 'none';
-    
-    // Show result
-    if (data.success) {
-      showSettlementSuccess(`
-        ✅ Settlement completed successfully!<br><br>
-        
-        📊 <strong>Summary:</strong><br>
-        • Participants: ${data.processed?.participants || 0}<br>
-        • Transactions: ${data.processed?.transactions || 0}<br>
-        • Settlements: ${data.processed?.settlements || 0}<br>
-        • Currency: ${data.currency || 'THB'}<br>
-        • Duration: ${data.duration || 'N/A'}<br><br>
-        
-        📝 Results have been written to your Google Sheet.
-      `);
-      
-      // Show notification in LINE
-      if (liff.isInClient()) {
-        liff.sendMessages([
-          {
-            type: 'text',
-            text: `✅ Settlement completed!\n${data.processed?.settlements || 0} transactions needed.\nCheck your Google Sheet.`
-          }
-        ]).catch(e => console.log("Cannot send notification:", e));
-      }
-    } else {
-      showSettlementError(data.message || data.error || 'Settlement failed');
-    }
-    
-    // Reload status
-    setTimeout(() => {
-      loadSettlementStatus();
-    }, 1000);
-    
-  } catch (error) {
-    console.error('Settlement error:', error);
-    document.getElementById('settlementLoading').style.display = 'none';
-    
-    if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
-      showSettlementError(`
-        Network error. This might be due to:<br><br>
-        1. No internet connection<br>
-        2. Google Apps Script quota exceeded<br>
-        3. CORS restrictions<br><br>
-        <strong>But your data was likely processed!</strong><br>
-        Check your Google Sheet columns AC & AD.
-      `);
-    } else {
-      showSettlementError('Error: ' + error.message);
-    }
-  }
-}
-
-async function clearSettlementResults() {
-  if (!confirm('Clear all settlement results from Google Sheet?')) {
-    return;
-  }
-  
-  try {
-    const response = await fetch(`${SETTLEMENT_API_URL}?action=clear&t=${Date.now()}`);
-    const text = await response.text();
-    const data = JSON.parse(text);
-    
-    if (data.success) {
-      showSettlementSuccess('✅ Results cleared successfully!');
-      setTimeout(() => {
-        loadSettlementStatus();
-      }, 1000);
-    } else {
-      showSettlementError('Failed to clear: ' + (data.error || 'Unknown error'));
-    }
-    
-  } catch (error) {
-    console.error('Clear error:', error);
-    showSettlementError('Failed to clear results.');
-  }
-}
-
-async function refreshStatus() {
-  document.getElementById('statusText').textContent = 'Refreshing...';
-  await loadSettlementStatus();
-  showSettlementSuccess('✅ Status refreshed!');
-}
-
-function showSettlementSuccess(message) {
-  const resultCard = document.getElementById('resultCard');
-  const resultTitle = document.getElementById('resultTitle');
-  const resultDetails = document.getElementById('resultDetails');
-  
-  if (!resultCard || !resultTitle || !resultDetails) {
-    console.error("Result card elements not found!");
-    alert(message.replace(/<[^>]*>/g, '')); // Fallback to alert
-    return;
-  }
-  
-  resultCard.className = 'result-card';
-  resultTitle.innerHTML = '<span>✅ Success!</span>';
-  resultDetails.innerHTML = message;
-  resultCard.style.display = 'block';
-  
-  // Auto-hide after 8 seconds
-  setTimeout(() => {
-    if (resultCard.style.display === 'block') {
-      resultCard.style.display = 'none';
-    }
-  }, 8000);
-}
-
-function showSettlementError(message) {
-  const resultCard = document.getElementById('resultCard');
-  const resultTitle = document.getElementById('resultTitle');
-  const resultDetails = document.getElementById('resultDetails');
-  
-  if (!resultCard || !resultTitle || !resultDetails) {
-    console.error("Result card elements not found!");
-    alert(message.replace(/<[^>]*>/g, '')); // Fallback to alert
-    return;
-  }
-  
-  resultCard.className = 'result-card error';
-  resultTitle.innerHTML = '<span>❌ Error!</span>';
-  resultDetails.innerHTML = message;
-  resultCard.style.display = 'block';
-  
-  // Auto-hide after 10 seconds
-  setTimeout(() => {
-    if (resultCard.style.display === 'block') {
-      resultCard.style.display = 'none';
-    }
-  }, 10000);
-}
-
-// ========== UPDATE INITIALIZE FUNCTION ==========
-async function initializeApp() {
-  try {
-    // 1. Initialize LIFF
-    await liff.init({ liffId: LIFF_ID });
-    
-    // 2. Check login
-    if (!liff.isLoggedIn()) {
-      liff.login();
-      return;
-    }
-    
-    // 3. Load profile for debugging
-    try {
-      const profile = await liff.getProfile();
-      console.log("LIFF user:", profile.displayName);
-    } catch (e) {
-      console.log("Cannot get profile:", e);
-    }
-    
-    // 4. Load participants
-    await loadParticipants();
-    
-    // 5. Set today's date
-    document.getElementById('date').valueAsDate = new Date();
-    
-    // 6. Load settlement status with retry
-    await loadSettlementStatus();
-    
-    // 7. Show the app
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    
-    console.log("LIFF app initialized successfully");
-    
-  } catch (error) {
-    console.error('Initialize error:', error);
-    document.getElementById('loading').innerHTML = `
-      <h3>Error Loading App</h3>
-      <p>${error.message}</p>
-      <button onclick="location.reload()">Retry</button>
-    `;
-  }
-}
-
-// ========== ADD DEBUG BUTTONS ==========
-// Add these debug functions to help troubleshoot
-
-async function debugSettlementAPI() {
-  const url = `${SETTLEMENT_API_URL}?action=status&t=${Date.now()}`;
-  console.log("Testing URL:", url);
-  
-  try {
-    const response = await fetch(url);
-    console.log("Response status:", response.status);
-    const text = await response.text();
-    console.log("Response text:", text);
-    
-    try {
-      const json = JSON.parse(text);
-      console.log("Parsed JSON:", json);
-      alert(`API Status: ${json.success ? 'OK' : 'Error'}\nMessage: ${json.message || json.error}`);
-    } catch (e) {
-      console.log("Not JSON:", e.message);
-      alert("Response is not JSON:\n" + text.substring(0, 200));
-    }
-  } catch (error) {
-    console.error("Fetch error:", error);
-    alert("Fetch error: " + error.message);
-  }
-}
-
-async function testSettlementDirectly() {
-  const url = `${SETTLEMENT_API_URL}?action=settle&t=${Date.now()}`;
-  console.log("Direct test URL:", url);
-  
-  try {
-    const response = await fetch(url);
-    const text = await response.text();
-    console.log("Direct response:", text);
-    
-    try {
-      const json = JSON.parse(text);
-      alert(`Direct test: ${json.success ? 'SUCCESS' : 'FAILED'}\n${json.message || json.error}`);
-    } catch (e) {
-      alert("Direct test response:\n" + text.substring(0, 300));
-    }
-  } catch (error) {
-    console.error("Direct test error:", error);
-    alert("Direct test error: " + error.message);
-  }
-}
-
-// Add debug buttons to your HTML temporarily:
-// <button onclick="debugSettlementAPI()">🔧 Debug API</button>
-// <button onclick="testSettlementDirectly()">🧪 Test Direct</button>
-        
-        // ========== COMMON FUNCTIONS ==========
-        function showSuccess(message) {
-            const div = document.getElementById('successMessage');
-            div.textContent = message;
-            div.style.display = 'block';
-            document.getElementById('errorMessage').style.display = 'none';
-            
-            setTimeout(() => {
-                div.style.display = 'none';
-            }, 3000);
-        }
-        
-        function showError(message) {
-            const div = document.getElementById('errorMessage');
-            div.textContent = message;
-            div.style.display = 'block';
-            document.getElementById('successMessage').style.display = 'none';
-            
-            setTimeout(() => {
-                div.style.display = 'none';
-            }, 3000);
-        }
-        
-        function openGoogleSheet() {
+        // Check Google Sheet
+        function checkSheet() {
             const sheetUrl = 'https://docs.google.com/spreadsheets/d/16ZLz6TEfsCJEd8r66z4Bu4afhilFVfV8LV4UdD1XryA/edit';
             if (liff.isInClient()) {
                 liff.openWindow({ url: sheetUrl, external: true });
@@ -843,8 +160,24 @@ async function testSettlementDirectly() {
             }
         }
         
-        // ========== START THE APP ==========
-        document.addEventListener('DOMContentLoaded', initializeApp);
+        // Show success message
+        function showSuccess(message) {
+            const result = document.getElementById('result');
+            result.className = 'result success';
+            result.innerHTML = '<strong>✅ Success!</strong><br>' + message;
+            result.style.display = 'block';
+        }
+        
+        // Show error message
+        function showError(message) {
+            const result = document.getElementById('result');
+            result.className = 'result error';
+            result.innerHTML = '<strong>❌ Error!</strong><br>' + message;
+            result.style.display = 'block';
+        }
+        
+        // Initialize on load
+        window.addEventListener('load', initialize);
     </script>
 </body>
 </html>
