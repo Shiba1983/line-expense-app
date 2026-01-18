@@ -6,14 +6,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             max-width: 500px;
             margin: 0 auto;
-            padding: 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+        }
+        .app-container {
+            padding: 20px;
+        }
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+            padding-top: 10px;
         }
         .card {
             background: white;
@@ -22,120 +30,13 @@
             margin: 15px 0;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
-        h1 {
-            color: white;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        h2 {
-            color: #333;
-            margin-top: 0;
-            margin-bottom: 20px;
-            font-size: 20px;
-        }
-        .input-group {
-            margin: 15px 0;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-        }
-        input, select, button {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-        input:focus, select:focus {
-            border-color: #667eea;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            font-weight: bold;
-            font-size: 18px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 7px 20px rgba(0,0,0,0.2);
-        }
-        .participants-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin: 10px 0;
-        }
-        .participant-checkbox {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            background: #f5f5f5;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        .participant-checkbox input {
-            width: auto;
-            margin-right: 10px;
-        }
-        .success-message {
-            background: #d4edda;
-            color: #155724;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            display: none;
-        }
-        .error-message {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            display: none;
-        }
-        #loading {
-            text-align: center;
-            padding: 40px;
-            color: white;
-        }
-        
-        /* Settlement styles */
-        .settlement-item {
-            padding: 15px;
-            margin: 10px 0;
-            background: #f8f9fa;
-            border-radius: 10px;
-            border-left: 4px solid #4CAF50;
-        }
-        .settlement-person {
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 5px;
-        }
-        .settlement-details {
-            color: #666;
-            font-size: 14px;
-        }
-        .no-settlement {
-            text-align: center;
-            padding: 30px;
-            color: #666;
-            background: #f5f5f5;
-            border-radius: 10px;
-        }
         .tab-buttons {
             display: flex;
-            margin-bottom: 20px;
             gap: 10px;
+            margin-bottom: 20px;
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 12px;
         }
         .tab-button {
             flex: 1;
@@ -146,6 +47,7 @@
             border-radius: 10px;
             font-weight: bold;
             cursor: pointer;
+            text-align: center;
         }
         .tab-button.active {
             background: white;
@@ -157,131 +59,315 @@
         .tab-content.active {
             display: block;
         }
-        .refresh-btn {
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+        
+        /* Summary View Styles */
+        .summary-section {
+            margin-bottom: 25px;
+        }
+        .summary-section h3 {
+            color: #444;
+            margin-bottom: 15px;
+            font-size: 18px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 8px;
+        }
+        
+        /* Expense Table */
+        .expense-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .expense-table th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #555;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .expense-table td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .expense-table tr:last-child td {
+            border-bottom: none;
+        }
+        .expense-table tr:hover {
+            background: #f9f9f9;
+        }
+        
+        /* Settlement Plan */
+        .settlement-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #4CAF50;
+        }
+        .settlement-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .settlement-person {
+            font-weight: bold;
+            color: #333;
+        }
+        .settlement-amount {
+            font-weight: bold;
+            color: #28a745;
+        }
+        .settlement-details {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Stats */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        /* Buttons */
+        .action-button {
+            width: 100%;
+            padding: 16px;
+            margin: 10px 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(0,0,0,0.2);
+        }
+        .refresh-button {
             background: #6c757d;
             font-size: 14px;
-            padding: 10px;
-            margin-top: 10px;
+            padding: 12px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 480px) {
+            .expense-table {
+                display: block;
+                overflow-x: auto;
+            }
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>✈️ Travel Expense Splitter</h1>
-    
-    <div class="tab-buttons">
-        <button class="tab-button active" onclick="switchTab('expense')">➕ Add Expense</button>
-        <button class="tab-button" onclick="switchTab('settlement')">💰 View Settlement</button>
-    </div>
-    
-    <div id="loading" class="card">
-        <p>Loading your expense tracker...</p>
-    </div>
-    
-    <div id="app" style="display: none;">
-        <!-- EXPENSE TAB (YOUR EXISTING CODE) -->
-        <div id="expenseTab" class="tab-content active">
-            <div class="card">
-                <h2>➕ Add New Expense</h2>
-                
-                <div class="input-group">
-                    <label>💰 Category</label>
-                    <select id="category">
-                        <option value="Food">🍔 Food & Drinks</option>
-                        <option value="Transport">🚗 Transportation</option>
-                        <option value="Accommodation">🏨 Accommodation</option>
-                        <option value="Activities">🎡 Activities</option>
-                        <option value="Shopping">🛍️ Shopping</option>
-                        <option value="Alcohol">🍺 Alcohol</option>
-                        <option value="Other">📝 Other</option>
-                    </select>
-                </div>
-                
-                <div class="input-group">
-                    <label>📝 Description / Item</label>
-                    <input type="text" id="description" placeholder="What was it? (e.g., Beach dinner, Taxi to hotel)">
-                </div>
-                
-                <div class="input-group">
-                    <label>📅 Date</label>
-                    <input type="date" id="date">
-                </div>
-                
-                <div class="input-group">
-                    <label>💸 Amount</label>
-                    <input type="number" id="amount" placeholder="Enter amount" step="0.01">
-                </div>
-                
-                <div class="input-group">
-                    <label>🌐 Currency</label>
-                    <select id="currency">
-                        <option value="THB">🇹🇭 THB (Baht)</option>
-                        <option value="USD">🇺🇸 USD (Dollar)</option>
-                        <option value="EUR">🇪🇺 EUR (Euro)</option>
-                        <option value="JPY">🇯🇵 JPY (Yen)</option>
-                        <option value="GBP">🇬🇧 GBP (Pound)</option>
-                    </select>
-                </div>
-                
-                <div class="input-group">
-                    <label>👤 Paid By</label>
-                    <select id="paidBy">
-                        <!-- Participants will be loaded here -->
-                    </select>
-                </div>
-                
-                <div class="input-group">
-                    <label>👥 Split Between</label>
-                    <div id="participantsContainer" class="participants-grid">
-                        <!-- Participants checkboxes will be loaded here -->
-                    </div>
-                    <button type="button" onclick="selectAllParticipants()" 
-                            style="margin-top: 10px; background: #6c757d; font-size: 14px;">
-                        Select All
-                    </button>
-                </div>
-                
-                <button onclick="submitExpense()">➕ Add Expense</button>
-                
-                <div id="successMessage" class="success-message"></div>
-                <div id="errorMessage" class="error-message"></div>
-            </div>
-            
-            <div class="card">
-                <h2>📊 How It Works</h2>
-                <p>✅ All expenses saved to your shared Google Sheet</p>
-                <p>✅ Automatically converted to THB (if needed)</p>
-                <p>✅ Split between selected people</p>
-                <p>✅ Added to debt calculations</p>
-                <button onclick="openGoogleSheet()" style="background: #28a745;">
-                    📋 Open Google Sheet
-                </button>
+    <div class="app-container">
+        <h1>✈️ Travel Expense Splitter</h1>
+        
+        <div class="tab-buttons">
+            <button class="tab-button active" onclick="switchTab('summary')">
+                📊 Summary
+            </button>
+            <button class="tab-button" onclick="switchTab('expense')">
+                ➕ Add Expense
+            </button>
+            <button class="tab-button" onclick="switchTab('settlement')">
+                💰 Settlement
+            </button>
+        </div>
+        
+        <div id="loading" class="card">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Loading your expense data...</p>
             </div>
         </div>
         
-        <!-- SETTLEMENT TAB (READ-ONLY VIEW) -->
-        <div id="settlementTab" class="tab-content">
-            <div class="card">
-                <h2>💰 Settlement Plan</h2>
-                <p>Viewing settlement results from your Google Sheet.</p>
-                
-                <div id="settlementLoading">
-                    <p>Loading settlement data...</p>
+        <div id="app" style="display: none;">
+            <!-- SUMMARY TAB -->
+            <div id="summaryTab" class="tab-content active">
+                <div class="card">
+                    <h2>📊 Expense Summary</h2>
+                    
+                    <div class="stats-container" id="statsContainer">
+                        <!-- Stats will be loaded here -->
+                    </div>
+                    
+                    <button onclick="loadSummaryData()" class="action-button refresh-button">
+                        🔄 Refresh Summary
+                    </button>
+                    
+                    <!-- Expense Details Section -->
+                    <div class="summary-section">
+                        <h3>💰 Expense Details</h3>
+                        <div id="expenseDetails">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Loading expense details...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Settlement Plan Section -->
+                    <div class="summary-section">
+                        <h3>📋 Settlement Plan</h3>
+                        <div id="settlementPlan">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Loading settlement plan...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button onclick="openGoogleSheet()" class="action-button" style="background: #28a745;">
+                        📋 Open Google Sheet
+                    </button>
                 </div>
-                
-                <div id="settlementResults">
-                    <!-- Settlement data will be loaded here -->
+            </div>
+            
+            <!-- ADD EXPENSE TAB (Your existing code) -->
+            <div id="expenseTab" class="tab-content">
+                <div class="card">
+                    <h2>➕ Add New Expense</h2>
+                    
+                    <div class="input-group">
+                        <label>💰 Category</label>
+                        <select id="category">
+                            <option value="Food">🍔 Food & Drinks</option>
+                            <option value="Transport">🚗 Transportation</option>
+                            <option value="Accommodation">🏨 Accommodation</option>
+                            <option value="Activities">🎡 Activities</option>
+                            <option value="Shopping">🛍️ Shopping</option>
+                            <option value="Alcohol">🍺 Alcohol</option>
+                            <option value="Other">📝 Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>📝 Description / Item</label>
+                        <input type="text" id="description" placeholder="What was it? (e.g., Beach dinner, Taxi to hotel)">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>📅 Date</label>
+                        <input type="date" id="date">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>💸 Amount</label>
+                        <input type="number" id="amount" placeholder="Enter amount" step="0.01">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>🌐 Currency</label>
+                        <select id="currency">
+                            <option value="THB">🇹🇭 THB (Baht)</option>
+                            <option value="USD">🇺🇸 USD (Dollar)</option>
+                            <option value="EUR">🇪🇺 EUR (Euro)</option>
+                            <option value="JPY">🇯🇵 JPY (Yen)</option>
+                            <option value="GBP">🇬🇧 GBP (Pound)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>👤 Paid By</label>
+                        <select id="paidBy">
+                            <!-- Participants will be loaded here -->
+                        </select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>👥 Split Between</label>
+                        <div id="participantsContainer" class="participants-grid">
+                            <!-- Participants checkboxes will be loaded here -->
+                        </div>
+                        <button type="button" onclick="selectAllParticipants()" 
+                                style="margin-top: 10px; background: #6c757d; font-size: 14px; padding: 10px; border-radius: 8px; border: none; color: white;">
+                            Select All
+                        </button>
+                    </div>
+                    
+                    <button onclick="submitExpense()" class="action-button">➕ Add Expense</button>
+                    
+                    <div id="successMessage" class="success-message"></div>
+                    <div id="errorMessage" class="error-message"></div>
                 </div>
-                
-                <button onclick="loadSettlementData()" class="refresh-btn">
-                    🔄 Refresh Settlement Data
-                </button>
-                
-                <div style="margin-top: 20px;">
-                    <p><strong>To update settlement calculations:</strong></p>
-                    <p>1. Open your Google Sheet</p>
-                    <p>2. Click "💰 Settlement" menu</p>
-                    <p>3. Click "Run Settlement"</p>
-                    <p>4. Return here and refresh</p>
+            </div>
+            
+            <!-- SETTLEMENT TAB -->
+            <div id="settlementTab" class="tab-content">
+                <div class="card">
+                    <h2>💰 Settlement Calculator</h2>
+                    
+                    <div class="status-card" style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                        <p><strong>Run settlement to calculate who owes whom</strong></p>
+                        <p style="font-size: 14px; color: #666; margin-top: 5px;">Results will appear in columns AC & AD of your Google Sheet</p>
+                    </div>
+                    
+                    <button onclick="runSettlement()" class="action-button" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                        ⚡ Run Settlement Now
+                    </button>
+                    
+                    <div id="settlementLoading" style="display: none; text-align: center; padding: 20px;">
+                        <div class="spinner"></div>
+                        <p>Calculating settlements...</p>
+                    </div>
+                    
+                    <div id="settlementResult" style="display: none; background: #e8f5e9; padding: 15px; border-radius: 10px; margin-top: 20px;">
+                        <!-- Results will appear here -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -290,12 +376,13 @@
     <script>
         // ========== CONFIGURATION ==========
         const EXPENSE_API_URL = 'https://script.google.com/macros/s/AKfycbyg3rG7YlRU_lYqM0vCL37QSWCGcLV6stNJzLlg_BRsAA2hkJsWnWLDY4YybfXKPPWcXg/exec';
-        const SETTLEMENT_READ_API_URL = 'https://script.google.com/macros/s/AKfycbyg3rG7YlRU_lYqM0vCL37QSWCGcLV6stNJzLlg_BRsAA2hkJsWnWLDY4YybfXKPPWcXg/exec';
+        const SUMMARY_API_URL = 'https://script.google.com/macros/s/AKfycbyg3rG7YlRU_lYqM0vCL37QSWCGcLV6stNJzLlg_BRsAA2hkJsWnWLDY4YybfXKPPWcXg/exec';
+        const SETTLEMENT_API_URL = 'https://script.google.com/macros/s/AKfycbyqEYYi8pY2oxrNDbxc0JCJEdbLC9Iqd-QTGHgHODtKf3bLzy2pAwCjqKU_i44zldcFpA/exec';
         const LIFF_ID = '2008858986-uLQlNN1S';
         
         // ========== APP STATE ==========
         let participantsList = [];
-        let currentTab = 'expense';
+        let currentTab = 'summary';
         
         // ========== INITIALIZE APP ==========
         async function initializeApp() {
@@ -312,24 +399,319 @@
                 // 3. Load participants from Google Sheets
                 await loadParticipants();
                 
-                // 4. Set today's date
+                // 4. Set today's date for expense form
                 document.getElementById('date').valueAsDate = new Date();
                 
                 // 5. Show the app
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
                 
-                // 6. Load settlement data if on that tab
-                if (currentTab === 'settlement') {
-                    await loadSettlementData();
+                // 6. Load summary data if on summary tab
+                if (currentTab === 'summary') {
+                    await loadSummaryData();
                 }
                 
+                console.log("App initialized successfully");
+                
             } catch (error) {
-                showError('Failed to initialize: ' + error.message);
+                console.error('Initialize error:', error);
+                document.getElementById('loading').innerHTML = `
+                    <div style="text-align: center; color: #c62828;">
+                        <h3>Error Loading App</h3>
+                        <p>${error.message}</p>
+                        <button onclick="location.reload()" style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; margin-top: 10px;">
+                            Retry
+                        </button>
+                    </div>
+                `;
             }
         }
         
-        // ========== LOAD PARTICIPANTS ==========
+        // ========== TAB SWITCHING ==========
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                if (btn.textContent.includes(
+                    tabName === 'summary' ? 'Summary' : 
+                    tabName === 'expense' ? 'Add Expense' : 'Settlement'
+                )) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            if (tabName === 'summary') {
+                document.getElementById('summaryTab').classList.add('active');
+                loadSummaryData();
+            } else if (tabName === 'expense') {
+                document.getElementById('expenseTab').classList.add('active');
+            } else {
+                document.getElementById('settlementTab').classList.add('active');
+            }
+            
+            currentTab = tabName;
+        }
+        
+        // ========== LOAD SUMMARY DATA ==========
+        async function loadSummaryData() {
+            try {
+                // Show loading states
+                document.getElementById('statsContainer').innerHTML = `
+                    <div class="stat-card">
+                        <div class="spinner" style="width: 30px; height: 30px; border-width: 3px;"></div>
+                        <div class="stat-label">Loading...</div>
+                    </div>
+                `;
+                
+                document.getElementById('expenseDetails').innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading expense details...</p>
+                    </div>
+                `;
+                
+                document.getElementById('settlementPlan').innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading settlement plan...</p>
+                    </div>
+                `;
+                
+                // Load all summary data
+                await Promise.all([
+                    loadSummaryStats(),
+                    loadExpenseDetails(),
+                    loadSettlementPlan()
+                ]);
+                
+                console.log("Summary data loaded successfully");
+                
+            } catch (error) {
+                console.error('Error loading summary:', error);
+                showAlert('Error loading summary data: ' + error.message, 'error');
+            }
+        }
+        
+        async function loadSummaryStats() {
+            try {
+                const response = await fetch(`${SUMMARY_API_URL}?action=getSummaryStats&t=${Date.now()}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const stats = data.stats || {};
+                    
+                    document.getElementById('statsContainer').innerHTML = `
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.totalExpenses || 0}</div>
+                            <div class="stat-label">Total Expenses</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.totalAmount || '0'}</div>
+                            <div class="stat-label">Total Amount (THB)</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.participants || 0}</div>
+                            <div class="stat-label">Participants</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.settlements || 0}</div>
+                            <div class="stat-label">Settlements Needed</div>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('statsContainer').innerHTML = `
+                        <div class="stat-card">
+                            <div class="stat-value">--</div>
+                            <div class="stat-label">No data</div>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                document.getElementById('statsContainer').innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-value">Error</div>
+                        <div class="stat-label">Could not load</div>
+                    </div>
+                `;
+            }
+        }
+        
+        async function loadExpenseDetails() {
+            try {
+                const response = await fetch(`${SUMMARY_API_URL}?action=getExpenseDetails&t=${Date.now()}`);
+                const data = await response.json();
+                
+                if (data.success && data.expenses && data.expenses.length > 0) {
+                    let tableHTML = `
+                        <table class="expense-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Paid By</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    data.expenses.forEach(expense => {
+                        tableHTML += `
+                            <tr>
+                                <td>${expense.date || ''}</td>
+                                <td>${expense.description || ''}</td>
+                                <td>${expense.amount ? 'THB ' + expense.amount.toLocaleString() : ''}</td>
+                                <td>${expense.paidBy || ''}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    tableHTML += `
+                            </tbody>
+                        </table>
+                    `;
+                    
+                    document.getElementById('expenseDetails').innerHTML = tableHTML;
+                } else {
+                    document.getElementById('expenseDetails').innerHTML = `
+                        <div style="text-align: center; padding: 30px; color: #666; background: #f9f9f9; border-radius: 10px;">
+                            <p>No expense data found.</p>
+                            <p>Add expenses in the "Add Expense" tab.</p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Error loading expenses:', error);
+                document.getElementById('expenseDetails').innerHTML = `
+                    <div style="text-align: center; padding: 30px; color: #c62828; background: #ffebee; border-radius: 10px;">
+                        <p>Error loading expense details.</p>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function loadSettlementPlan() {
+            try {
+                const response = await fetch(`${SUMMARY_API_URL}?action=getSettlementPlan&t=${Date.now()}`);
+                const data = await response.json();
+                
+                if (data.success && data.settlements && data.settlements.length > 0) {
+                    let settlementsHTML = '';
+                    
+                    data.settlements.forEach(item => {
+                        if (item.name && item.instructions) {
+                            settlementsHTML += `
+                                <div class="settlement-card">
+                                    <div class="settlement-header">
+                                        <div class="settlement-person">${item.name}</div>
+                                    </div>
+                                    <div class="settlement-details">${item.instructions}</div>
+                                </div>
+                            `;
+                        }
+                    });
+                    
+                    if (settlementsHTML) {
+                        document.getElementById('settlementPlan').innerHTML = settlementsHTML;
+                    } else {
+                        showNoSettlementData();
+                    }
+                } else {
+                    showNoSettlementData();
+                }
+                
+            } catch (error) {
+                console.error('Error loading settlement:', error);
+                document.getElementById('settlementPlan').innerHTML = `
+                    <div style="text-align: center; padding: 30px; color: #c62828; background: #ffebee; border-radius: 10px;">
+                        <p>Error loading settlement plan.</p>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function showNoSettlementData() {
+            document.getElementById('settlementPlan').innerHTML = `
+                <div style="text-align: center; padding: 30px; color: #666; background: #f9f9f9; border-radius: 10px;">
+                    <p>No settlement plan found.</p>
+                    <p>Run settlement in the "Settlement" tab first.</p>
+                    <button onclick="switchTab('settlement')" style="margin-top: 10px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px;">
+                        Go to Settlement
+                    </button>
+                </div>
+            `;
+        }
+        
+        // ========== SETTLEMENT FUNCTIONS ==========
+        async function runSettlement() {
+            try {
+                // Show loading
+                document.getElementById('settlementLoading').style.display = 'block';
+                document.getElementById('settlementResult').style.display = 'none';
+                
+                const url = `${SETTLEMENT_API_URL}?action=settle&t=${Date.now()}`;
+                console.log("Running settlement:", url);
+                
+                const response = await fetch(url);
+                const text = await response.text();
+                
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    throw new Error("Invalid response from server");
+                }
+                
+                // Hide loading
+                document.getElementById('settlementLoading').style.display = 'none';
+                
+                if (data.success) {
+                    document.getElementById('settlementResult').innerHTML = `
+                        <div style="color: #155724;">
+                            <h4 style="margin-bottom: 10px;">✅ Settlement Complete!</h4>
+                            <p>${data.message}</p>
+                            <p style="margin-top: 10px; font-size: 14px;">Results written to Google Sheet. Refresh summary to see updates.</p>
+                        </div>
+                    `;
+                    document.getElementById('settlementResult').style.display = 'block';
+                    
+                    // Refresh summary after 2 seconds
+                    setTimeout(() => {
+                        if (currentTab === 'summary') {
+                            loadSummaryData();
+                        }
+                    }, 2000);
+                } else {
+                    throw new Error(data.error || data.message || "Settlement failed");
+                }
+                
+            } catch (error) {
+                console.error('Settlement error:', error);
+                document.getElementById('settlementLoading').style.display = 'none';
+                document.getElementById('settlementResult').innerHTML = `
+                    <div style="color: #721c24;">
+                        <h4 style="margin-bottom: 10px;">❌ Settlement Failed</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+                document.getElementById('settlementResult').style.display = 'block';
+            }
+        }
+        
+        // ========== EXPENSE FUNCTIONS (Your existing code) ==========
         async function loadParticipants() {
             try {
                 const response = await fetch(EXPENSE_API_URL + '?action=getParticipants');
@@ -368,101 +750,10 @@
                 });
                 
             } catch (error) {
-                showError('Could not load participants: ' + error.message);
+                showAlert('Could not load participants: ' + error.message, 'error');
             }
         }
         
-        // ========== LOAD SETTLEMENT DATA (READ-ONLY) ==========
-        async function loadSettlementData() {
-            try {
-                document.getElementById('settlementLoading').innerHTML = '<p>Loading settlement data...</p>';
-                document.getElementById('settlementResults').innerHTML = '';
-                
-                // Call your existing API to READ settlement data
-                const response = await fetch(SETTLEMENT_READ_API_URL + '?action=getSettlement');
-                const data = await response.json();
-                
-                if (data.success && data.settlementData && data.settlementData.length > 0) {
-                    displaySettlementData(data.settlementData);
-                } else {
-                    document.getElementById('settlementResults').innerHTML = `
-                        <div class="no-settlement">
-                            <p>📭 No settlement data found.</p>
-                            <p>Run settlement in Google Sheet first.</p>
-                            <button onclick="openGoogleSheet()" style="margin-top: 10px;">
-                                Open Google Sheet
-                            </button>
-                        </div>
-                    `;
-                }
-                
-                document.getElementById('settlementLoading').innerHTML = '';
-                
-            } catch (error) {
-                console.error('Error loading settlement:', error);
-                document.getElementById('settlementResults').innerHTML = `
-                    <div class="no-settlement">
-                        <p>❌ Error loading settlement data.</p>
-                        <p>${error.message}</p>
-                        <button onclick="openGoogleSheet()" style="margin-top: 10px;">
-                            Open Google Sheet to View
-                        </button>
-                    </div>
-                `;
-                document.getElementById('settlementLoading').innerHTML = '';
-            }
-        }
-        
-        function displaySettlementData(settlements) {
-            let html = '';
-            
-            settlements.forEach(item => {
-                if (item.name && item.instructions) {
-                    html += `
-                        <div class="settlement-item">
-                            <div class="settlement-person">${item.name}</div>
-                            <div class="settlement-details">${item.instructions}</div>
-                        </div>
-                    `;
-                }
-            });
-            
-            if (!html) {
-                html = `<div class="no-settlement">
-                    <p>No settlement instructions found in columns AC & AD.</p>
-                    <p>Run the settlement in Google Sheet first.</p>
-                </div>`;
-            }
-            
-            document.getElementById('settlementResults').innerHTML = html;
-        }
-        
-        // ========== TAB SWITCHING ==========
-        function switchTab(tabName) {
-            // Update tab buttons
-            document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.textContent.includes(tabName === 'expense' ? 'Add Expense' : 'View Settlement')) {
-                    btn.classList.add('active');
-                }
-            });
-            
-            // Update tab content
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            
-            if (tabName === 'expense') {
-                document.getElementById('expenseTab').classList.add('active');
-            } else {
-                document.getElementById('settlementTab').classList.add('active');
-                loadSettlementData();
-            }
-            
-            currentTab = tabName;
-        }
-        
-        // ========== EXPENSE SUBMISSION (YOUR EXISTING CODE) ==========
         async function submitExpense() {
             const category = document.getElementById('category').value;
             const description = document.getElementById('description').value;
@@ -477,15 +768,15 @@
             
             // Validation
             if (!description) {
-                showError('Please enter a description');
+                showAlert('Please enter a description', 'error');
                 return;
             }
             if (!amount || parseFloat(amount) <= 0) {
-                showError('Please enter a valid amount');
+                showAlert('Please enter a valid amount', 'error');
                 return;
             }
             if (selectedParticipants.length === 0) {
-                showError('Please select at least one participant');
+                showAlert('Please select at least one participant', 'error');
                 return;
             }
             
@@ -509,43 +800,65 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    showSuccess('✅ Expense added successfully!');
+                    showAlert('✅ Expense added successfully!', 'success');
                     // Clear form fields
                     document.getElementById('description').value = '';
                     document.getElementById('amount').value = '';
+                    
+                    // Refresh summary if on summary tab
+                    if (currentTab === 'summary') {
+                        setTimeout(() => loadSummaryData(), 1000);
+                    }
                 } else {
-                    showError('Error: ' + (result.error || 'Unknown error'));
+                    showAlert('Error: ' + (result.error || 'Unknown error'), 'error');
                 }
             } catch (error) {
-                showError('Network error. Please try again.');
+                showAlert('Network error. Please try again.', 'error');
             }
         }
         
-        // ========== HELPER FUNCTIONS ==========
         function selectAllParticipants() {
             const checkboxes = document.querySelectorAll('#participantsContainer input[type="checkbox"]');
             checkboxes.forEach(cb => cb.checked = true);
         }
         
-        function showSuccess(message) {
-            const div = document.getElementById('successMessage');
-            div.textContent = message;
-            div.style.display = 'block';
-            document.getElementById('errorMessage').style.display = 'none';
+        // ========== HELPER FUNCTIONS ==========
+        function showAlert(message, type) {
+            // Remove existing alerts
+            const existingAlert = document.querySelector('.alert-message');
+            if (existingAlert) existingAlert.remove();
             
-            setTimeout(() => {
-                div.style.display = 'none';
-            }, 3000);
-        }
-        
-        function showError(message) {
-            const div = document.getElementById('errorMessage');
-            div.textContent = message;
-            div.style.display = 'block';
-            document.getElementById('successMessage').style.display = 'none';
+            const alert = document.createElement('div');
+            alert.className = `alert-message ${type}`;
+            alert.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                padding: 15px 25px;
+                border-radius: 10px;
+                color: white;
+                font-weight: bold;
+                z-index: 1000;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                animation: slideIn 0.3s ease;
+            `;
             
+            if (type === 'success') {
+                alert.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+            } else {
+                alert.style.background = 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)';
+            }
+            
+            alert.textContent = message;
+            document.body.appendChild(alert);
+            
+            // Auto remove after 3 seconds
             setTimeout(() => {
-                div.style.display = 'none';
+                if (alert.parentNode) {
+                    alert.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => alert.remove(), 300);
+                }
             }, 3000);
         }
         
@@ -560,6 +873,29 @@
         
         // ========== START THE APP ==========
         document.addEventListener('DOMContentLoaded', initializeApp);
+        
+        // Add CSS for animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(-50%) translateY(-100%); opacity: 0; }
+                to { transform: translateX(-50%) translateY(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(-50%) translateY(0); opacity: 1; }
+                to { transform: translateX(-50%) translateY(-100%); opacity: 0; }
+            }
+            .input-group { margin: 15px 0; }
+            .input-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
+            .input-group input, .input-group select { width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; }
+            .input-group input:focus, .input-group select:focus { border-color: #667eea; outline: none; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+            .participants-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0; }
+            .participant-checkbox { display: flex; align-items: center; padding: 10px; background: #f5f5f5; border-radius: 8px; cursor: pointer; }
+            .participant-checkbox input { width: auto; margin-right: 10px; }
+            .success-message { background: #d4edda; color: #155724; padding: 15px; border-radius: 10px; margin: 15px 0; display: none; }
+            .error-message { background: #f8d7da; color: #721c24; padding: 15px; border-radius: 10px; margin: 15px 0; display: none; }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
