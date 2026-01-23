@@ -200,12 +200,31 @@
             padding: 12px;
         }
         
-        /* Responsive */
+                /* Responsive Styles */
+        .expense-table {
+            min-width: 600px; /* Ensures table doesn't get too cramped */
+        }
+        
         @media (max-width: 480px) {
             .expense-table {
                 display: block;
                 overflow-x: auto;
             }
+            
+            .expense-table th,
+            .expense-table td {
+                padding: 8px;
+                font-size: 13px;
+            }
+            
+            .expense-table th:nth-child(2), /* Description column */
+            .expense-table td:nth-child(2) {
+                max-width: 150px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            
             .stats-container {
                 grid-template-columns: 1fr;
             }
@@ -547,60 +566,67 @@
         }
         
         async function loadExpenseDetails() {
-            try {
-                const response = await fetch(`${SUMMARY_API_URL}?action=getExpenseDetails&t=${Date.now()}`);
-                const data = await response.json();
-                
-                if (data.success && data.expenses && data.expenses.length > 0) {
-                    let tableHTML = `
-                        <table class="expense-table">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Description</th>
-                                    <th>Amount</th>
-                                    <th>Paid By</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                    `;
-                    
-                    data.expenses.forEach(expense => {
-                        tableHTML += `
+    try {
+        const response = await fetch(`${SUMMARY_API_URL}?action=getExpenseDetails&t=${Date.now()}`);
+        const data = await response.json();
+        
+        if (data.success && data.expenses && data.expenses.length > 0) {
+            let tableHTML = `
+                <div style="overflow-x: auto;">
+                    <table class="expense-table">
+                        <thead>
                             <tr>
-                                <td>${expense.date || ''}</td>
-                                <td>${expense.description || ''}</td>
-                                <td>${expense.amount ? 'THB ' + expense.amount.toLocaleString() : ''}</td>
-                                <td>${expense.paidBy || ''}</td>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th>Currency</th>
+                                <th>Paid By</th>
+                                <th>Per Person</th>
                             </tr>
-                        `;
-                    });
-                    
-                    tableHTML += `
-                            </tbody>
-                        </table>
-                    `;
-                    
-                    document.getElementById('expenseDetails').innerHTML = tableHTML;
-                } else {
-                    document.getElementById('expenseDetails').innerHTML = `
-                        <div style="text-align: center; padding: 30px; color: #666; background: #f9f9f9; border-radius: 10px;">
-                            <p>No expense data found.</p>
-                            <p>Add expenses in the "Add Expense" tab.</p>
-                        </div>
-                    `;
-                }
-                
-            } catch (error) {
-                console.error('Error loading expenses:', error);
-                document.getElementById('expenseDetails').innerHTML = `
-                    <div style="text-align: center; padding: 30px; color: #c62828; background: #ffebee; border-radius: 10px;">
-                        <p>Error loading expense details.</p>
-                        <p>${error.message}</p>
-                    </div>
+                        </thead>
+                        <tbody>
+            `;
+            
+            data.expenses.forEach(expense => {
+                tableHTML += `
+                    <tr>
+                        <td>${expense.date || ''}</td>
+                        <td>${expense.description || ''}</td>
+                        <td style="text-align: right;">${expense.amount ? expense.amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : ''}</td>
+                        <td>${expense.currency || ''}</td>
+                        <td>${expense.paidBy || ''}</td>
+                        <td style="text-align: right;">${expense.perPerson ? expense.perPerson.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : ''}</td>
+                    </tr>
                 `;
-            }
+            });
+            
+            tableHTML += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            document.getElementById('expenseDetails').innerHTML = tableHTML;
+        } else {
+            document.getElementById('expenseDetails').innerHTML = `
+                <div style="text-align: center; padding: 30px; color: #666; background: #f9f9f9; border-radius: 10px;">
+                    <p>No expense data found.</p>
+                    <p>Add expenses in the "Add Expense" tab.</p>
+                </div>
+            `;
         }
+        
+    } catch (error) {
+        console.error('Error loading expenses:', error);
+        document.getElementById('expenseDetails').innerHTML = `
+            <div style="text-align: center; padding: 30px; color: #c62828; background: #ffebee; border-radius: 10px;">
+                <p>Error loading expense details.</p>
+                <p>${error.message}</p>
+            </div>
+        `;
+    }
+}
+
         
         async function loadSettlementPlan() {
             try {
