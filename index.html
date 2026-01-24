@@ -604,9 +604,18 @@
 async function loadExpenseDetails() {
     try {
         const response = await fetch(`${SUMMARY_API_URL}?action=getExpenseDetails&t=${Date.now()}`);
-        const data = await response.json();
+        const text = await response.text();
         
-        console.log('Raw API Data:', data); // For debugging
+        console.log('API Response Text:', text); // See raw response
+        
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            throw new Error('Invalid JSON response from server');
+        }
+        
+        console.log('Parsed API Data:', data); // See parsed data
         
         if (data.success && data.expenses && data.expenses.length > 0) {
             let tableHTML = `
@@ -614,36 +623,34 @@ async function loadExpenseDetails() {
                     <table class="expense-table" style="margin: 0; width: 100%; border-collapse: collapse; font-size: 14px;">
                         <thead>
                             <tr style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">
-                                <th style="padding: 12px 8px; text-align: left; font-weight: 600; min-width: 100px;">Date</th>
-                                <th style="padding: 12px 8px; text-align: left; font-weight: 600; min-width: 150px;">Description</th>
-                                <th style="padding: 12px 8px; text-align: right; font-weight: 600; min-width: 100px;">Amount</th>
-                                <th style="padding: 12px 8px; text-align: center; font-weight: 600; min-width: 80px;">Currency</th>
-                                <th style="padding: 12px 8px; text-align: left; font-weight: 600; min-width: 100px;">Paid By</th>
-                                <th style="padding: 12px 8px; text-align: right; font-weight: 600; min-width: 120px;">Amount Per Person</th>
+                                <th style="padding: 12px 8px; text-align: left; font-weight: 600;">Date</th>
+                                <th style="padding: 12px 8px; text-align: left; font-weight: 600;">Description</th>
+                                <th style="padding: 12px 8px; text-align: right; font-weight: 600;">Amount</th>
+                                <th style="padding: 12px 8px; text-align: center; font-weight: 600;">Currency</th>
+                                <th style="padding: 12px 8px; text-align: left; font-weight: 600;">Paid By</th>
+                                <th style="padding: 12px 8px; text-align: right; font-weight: 600;">Amount Per Person</th>
                             </tr>
                         </thead>
                         <tbody>
             `;
             
-            // Simply display what the API gives us, no fixing, no assumptions
             data.expenses.forEach(expense => {
-                // Format numbers if they exist
-                const formattedAmount = expense.amount ? 
-                    parseFloat(expense.amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : 
-                    '0.00';
-                
-                const formattedPerPerson = expense.perPerson ? 
-                    parseFloat(expense.perPerson).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : 
-                    '0.00';
+                // Convert everything to string, no formatting
+                const date = expense.date === null || expense.date === undefined ? '' : String(expense.date);
+                const description = expense.description === null || expense.description === undefined ? '' : String(expense.description);
+                const amount = expense.amount === null || expense.amount === undefined ? '' : String(expense.amount);
+                const currency = expense.currency === null || expense.currency === undefined ? '' : String(expense.currency);
+                const paidBy = expense.paidBy === null || expense.paidBy === undefined ? '' : String(expense.paidBy);
+                const perPerson = expense.perPerson === null || expense.perPerson === undefined ? '' : String(expense.perPerson);
                 
                 tableHTML += `
                     <tr style="border-bottom: 1px solid #e9ecef;">
-                        <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef; white-space: nowrap;">${expense.date || '-'}</td>
-                        <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${expense.description || '-'}</td>
-                        <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef; text-align: right; white-space: nowrap; font-weight: 500;">${formattedAmount}</td>
-                        <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef; text-align: center; font-weight: 500;">${expense.currency || '-'}</td>
-                        <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef;">${expense.paidBy || '-'}</td>
-                        <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef; text-align: right; white-space: nowrap; color: #1976d2; font-weight: 500;">${formattedPerPerson}</td>
+                        <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef; white-space: nowrap;">${date}</td>
+                        <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${description}</td>
+                        <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef; text-align: right; white-space: nowrap;">${amount}</td>
+                        <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef; text-align: center;">${currency}</td>
+                        <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef;">${paidBy}</td>
+                        <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef; text-align: right; white-space: nowrap;">${perPerson}</td>
                     </tr>
                 `;
             });
@@ -660,7 +667,6 @@ async function loadExpenseDetails() {
                 <div style="text-align: center; padding: 40px 20px; color: #5f6368; background: #f8f9fa; border-radius: 8px; margin: 20px 0;">
                     <div style="font-size: 48px; margin-bottom: 15px; color: #dadce0;">📊</div>
                     <h3 style="margin: 0 0 10px 0; font-weight: 500; color: #3c4043;">No expenses found</h3>
-                    <p style="margin: 0; color: #5f6368; font-size: 14px;">Add your first expense in the "Add Expense" tab</p>
                 </div>
             `;
         }
@@ -671,7 +677,8 @@ async function loadExpenseDetails() {
             <div style="text-align: center; padding: 40px 20px; color: #d93025; background: #fce8e6; border-radius: 8px; margin: 20px 0;">
                 <div style="font-size: 48px; margin-bottom: 15px;">⚠️</div>
                 <h3 style="margin: 0 0 10px 0; font-weight: 500;">Error loading expenses</h3>
-                <p style="margin: 0; color: #c5221f; font-size: 14px;">${error.message || 'Please check your connection and try again'}</p>
+                <p style="margin: 0; color: #c5221f; font-size: 14px;">${error.message}</p>
+                <p style="margin-top: 10px; font-size: 12px;">Check browser console (F12) for API response</p>
             </div>
         `;
     }
