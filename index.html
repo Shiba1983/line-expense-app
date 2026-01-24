@@ -234,23 +234,7 @@
         grid-template-columns: 1fr;
     }
     
-    /* ⬇️ ADD THIS NEW SECTION ⬇️ */
-    
-    /* Hide currency column header and cells on mobile */
-    .expense-table th:nth-child(4),
-    .expense-table td:nth-child(4) {
-        display: none;
-    }
-    
-    /* Show currency inline with amount */
-    .expense-table td:nth-child(3)::after {
-        content: " " attr(data-currency);
-        font-size: 0.9em;
-        color: #666;
-        font-weight: normal;
-    }
-    
-    /* ⬆️ END OF NEW SECTION ⬆️ */
+  
 }
 
     
