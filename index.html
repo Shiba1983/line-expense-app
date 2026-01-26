@@ -77,40 +77,122 @@
             padding-bottom: 8px;
         }
         
-       /* Expense Table */
-.expense-table {
-    width: 100%;
-    min-width: 650px; /* Increased from 600px */
-    border-collapse: collapse;
-    margin-top: 10px;
-    table-layout: auto; /* Allow columns to size based on content */
-}
-.expense-table th {
-    background: #f8f9fa;
-    padding: 12px 8px;
-    text-align: left;
-    font-weight: 600;
-    color: #555;
-    border-bottom: 2px solid #e0e0e0;
-    white-space: nowrap; /* Prevent header wrapping */
-}
-.expense-table td {
-    padding: 12px 8px;
-    border-bottom: 1px solid #f0f0f0;
-}
-.expense-table tr:last-child td {
-    border-bottom: none;
-}
-.expense-table tr:hover {
-    background: #f9f9f9;
-}
-
-/* Ensure table wrapper allows horizontal scroll */
-.summary-section > div {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
+        /* NEW: Clean Expense Cards (Replaced Table) */
+        .expense-cards-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .expense-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 16px;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .expense-card:hover {
+            background: #eef2ff;
+            transform: translateX(2px);
+        }
+        .expense-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .expense-date {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+        .expense-amount {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 16px;
+        }
+        .expense-description {
+            color: #555;
+            margin-bottom: 8px;
+            font-size: 15px;
+            line-height: 1.4;
+        }
+        .expense-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: #666;
+        }
+        .expense-paid-by {
+            background: #e0e7ff;
+            padding: 4px 10px;
+            border-radius: 12px;
+            color: #4f46e5;
+        }
+        .expense-currency {
+            font-weight: 500;
+        }
+        .view-detail-btn {
+            background: none;
+            border: none;
+            color: #667eea;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 2px 8px;
+        }
+        
+        /* NEW: Detail View Styles */
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .back-button {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .detail-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            color: #666;
+            font-size: 14px;
+        }
+        .detail-value {
+            font-weight: 600;
+            color: #333;
+            font-size: 15px;
+        }
+        .detail-value.amount {
+            color: #667eea;
+            font-size: 18px;
+        }
+        .detail-value.per-person {
+            color: #28a745;
+            font-size: 16px;
+        }
         
         /* Settlement Plan */
         .settlement-card {
@@ -210,45 +292,31 @@
             padding: 12px;
         }
         
-               /* Responsive Styles */
-@media (max-width: 480px) {
-    .expense-table {
-        display: table;
-        font-size: 12px;
-    }
-    
-    .expense-table th,
-    .expense-table td {
-        padding: 8px 5px;
-        font-size: 12px;
-    }
-    
-    .expense-table th:nth-child(2),
-    .expense-table td:nth-child(2) {
-        max-width: 100px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    
-    .stats-container {
-        grid-template-columns: 1fr;
-    }
-    
-  
-}
-
-    
-    /* Add visual indicator for scrollable content */
-    .summary-section > div::after {
-        content: "← Swipe to see more →";
-        display: block;
-        text-align: center;
-        color: #999;
-        font-size: 11px;
-        margin-top: 5px;
-        font-style: italic;
-    }
-}
+        /* Responsive */
+        @media (max-width: 480px) {
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            .expense-card {
+                padding: 14px;
+            }
+        }
+        
+        /* Filter/Sort Controls */
+        .filter-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .filter-select {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -282,6 +350,20 @@
                     
                     <div class="stats-container" id="statsContainer">
                         <!-- Stats will be loaded here -->
+                    </div>
+                    
+                    <!-- Filter Controls -->
+                    <div class="filter-controls">
+                        <select id="sortBy" class="filter-select" onchange="loadExpenseDetails()">
+                            <option value="date">Sort by: Date (Newest)</option>
+                            <option value="amount">Sort by: Amount (High to Low)</option>
+                        </select>
+                        <select id="filterBy" class="filter-select" onchange="loadExpenseDetails()">
+                            <option value="all">All Expenses</option>
+                            <option value="Food">Food & Drinks</option>
+                            <option value="Transport">Transportation</option>
+                            <option value="Accommodation">Accommodation</option>
+                        </select>
                     </div>
                     
                     <button onclick="loadSummaryData()" class="action-button refresh-button">
@@ -409,6 +491,26 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- NEW: DETAIL VIEW (Hidden by default) -->
+            <div id="detailTab" class="tab-content">
+                <div class="card">
+                    <div class="detail-header">
+                        <button onclick="backToSummary()" class="back-button">
+                            ← Back to Summary
+                        </button>
+                        <h2 style="margin: 0;">📄 Expense Details</h2>
+                    </div>
+                    
+                    <div id="expenseDetailContent">
+                        <!-- Detail content will be loaded here -->
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Loading expense details...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -422,6 +524,7 @@
         // ========== APP STATE ==========
         let participantsList = [];
         let currentTab = 'summary';
+        let expensesData = []; // Store expenses for detail view
         
         // ========== INITIALIZE APP ==========
         async function initializeApp() {
@@ -468,18 +571,10 @@
         
         // ========== TAB SWITCHING ==========
         function switchTab(tabName) {
-            // Update tab buttons
+            // Update tab buttons (hide for detail tab)
             document.querySelectorAll('.tab-button').forEach(btn => {
                 btn.classList.remove('active');
-            });
-            
-            document.querySelectorAll('.tab-button').forEach(btn => {
-                if (btn.textContent.includes(
-                    tabName === 'summary' ? 'Summary' : 
-                    tabName === 'expense' ? 'Add Expense' : 'Settlement'
-                )) {
-                    btn.classList.add('active');
-                }
+                btn.style.display = tabName === 'detail' ? 'none' : 'flex';
             });
             
             // Update tab content
@@ -487,16 +582,22 @@
                 content.classList.remove('active');
             });
             
+            currentTab = tabName;
+            
             if (tabName === 'summary') {
+                document.querySelector('.tab-button:nth-child(1)').classList.add('active');
                 document.getElementById('summaryTab').classList.add('active');
+                document.querySelectorAll('.tab-button').forEach(btn => btn.style.display = 'flex');
                 loadSummaryData();
             } else if (tabName === 'expense') {
+                document.querySelector('.tab-button:nth-child(2)').classList.add('active');
                 document.getElementById('expenseTab').classList.add('active');
-            } else {
+            } else if (tabName === 'settlement') {
+                document.querySelector('.tab-button:nth-child(3)').classList.add('active');
                 document.getElementById('settlementTab').classList.add('active');
+            } else if (tabName === 'detail') {
+                document.getElementById('detailTab').classList.add('active');
             }
-            
-            currentTab = tabName;
         }
         
         // ========== LOAD SUMMARY DATA ==========
@@ -585,89 +686,166 @@
             }
         }
         
-async function loadExpenseDetails() {
-    try {
-        const response = await fetch(`${SUMMARY_API_URL}?action=getExpenseDetails&t=${Date.now()}`);
-        const text = await response.text();
-        
-        console.log('API Response Text:', text); // See raw response
-        
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch (e) {
-            throw new Error('Invalid JSON response from server');
-        }
-        
-        console.log('Parsed API Data:', data); // See parsed data
-        
-        if (data.success && data.expenses && data.expenses.length > 0) {
-            let tableHTML = `
-                <div style="overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0; padding: 0; width: 100%;">
-                    <table class="expense-table" style="margin: 0; width: 100%; border-collapse: collapse; font-size: 14px;">
-                        <thead>
-                            <tr style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">
-                                <th style="padding: 12px 8px; text-align: left; font-weight: 600;">Date</th>
-                                <th style="padding: 12px 8px; text-align: left; font-weight: 600;">Description</th>
-                                <th style="padding: 12px 8px; text-align: right; font-weight: 600;">Amount</th>
-                                <th style="padding: 12px 8px; text-align: center; font-weight: 600;">Currency</th>
-                                <th style="padding: 12px 8px; text-align: left; font-weight: 600;">Paid By</th>
-                                <th style="padding: 12px 8px; text-align: right; font-weight: 600;">Amount Per Person</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
-            
-            data.expenses.forEach(expense => {
-                // Convert everything to string, no formatting
-                const date = expense.date === null || expense.date === undefined ? '' : String(expense.date);
-                const description = expense.description === null || expense.description === undefined ? '' : String(expense.description);
-                const amount = expense.amount === null || expense.amount === undefined ? '' : String(expense.amount);
-                const currency = expense.currency === null || expense.currency === undefined ? '' : String(expense.currency);
-                const paidBy = expense.paidBy === null || expense.paidBy === undefined ? '' : String(expense.paidBy);
-                const perPerson = expense.perPerson === null || expense.perPerson === undefined ? '' : String(expense.perPerson);
+        async function loadExpenseDetails() {
+            try {
+                const response = await fetch(`${SUMMARY_API_URL}?action=getExpenseDetails&t=${Date.now()}`);
+                const text = await response.text();
                 
-                tableHTML += `
-                    <tr style="border-bottom: 1px solid #e9ecef;">
-                        <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef; white-space: nowrap;">${date}</td>
-                        <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${description}</td>
-                        <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef; text-align: right; white-space: nowrap;">${amount}</td>
-                        <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef; text-align: center;">${currency}</td>
-                        <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef;">${paidBy}</td>
-                        <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef; text-align: right; white-space: nowrap;">${perPerson}</td>
-                    </tr>
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    throw new Error('Invalid JSON response from server');
+                }
+                
+                if (data.success && data.expenses && data.expenses.length > 0) {
+                    // Store expenses for detail view
+                    expensesData = data.expenses;
+                    
+                    // Apply filters
+                    const filteredExpenses = applyFilters(data.expenses);
+                    
+                    if (filteredExpenses.length === 0) {
+                        document.getElementById('expenseDetails').innerHTML = `
+                            <div style="text-align: center; padding: 40px 20px; color: #5f6368; background: #f8f9fa; border-radius: 8px; margin: 20px 0;">
+                                <div style="font-size: 48px; margin-bottom: 15px; color: #dadce0;">📊</div>
+                                <h3 style="margin: 0 0 10px 0; font-weight: 500; color: #3c4043;">No matching expenses</h3>
+                                <p style="color: #5f6368;">Try changing your filter settings</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    let cardsHTML = `<div class="expense-cards-container">`;
+                    
+                    filteredExpenses.forEach((expense, index) => {
+                        // Format date
+                        const dateStr = expense.date ? String(expense.date).substring(0, 10) : 'N/A';
+                        
+                        cardsHTML += `
+                            <div class="expense-card" onclick="showExpenseDetail(${index})">
+                                <div class="expense-header">
+                                    <div class="expense-date">${dateStr}</div>
+                                    <div class="expense-amount">${expense.amount || '0'} ${expense.currency || ''}</div>
+                                </div>
+                                <div class="expense-description">${expense.description || ''}</div>
+                                <div class="expense-footer">
+                                    <div class="expense-paid-by">Paid by: ${expense.paidBy || ''}</div>
+                                    <button class="view-detail-btn" onclick="event.stopPropagation(); showExpenseDetail(${index})">
+                                        View Details →
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    cardsHTML += `</div>`;
+                    
+                    document.getElementById('expenseDetails').innerHTML = cardsHTML;
+                } else {
+                    document.getElementById('expenseDetails').innerHTML = `
+                        <div style="text-align: center; padding: 40px 20px; color: #5f6368; background: #f8f9fa; border-radius: 8px; margin: 20px 0;">
+                            <div style="font-size: 48px; margin-bottom: 15px; color: #dadce0;">📊</div>
+                            <h3 style="margin: 0 0 10px 0; font-weight: 500; color: #3c4043;">No expenses found</h3>
+                            <p style="color: #5f6368;">Add your first expense in the "Add Expense" tab</p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Error loading expenses:', error);
+                document.getElementById('expenseDetails').innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px; color: #d93025; background: #fce8e6; border-radius: 8px; margin: 20px 0;">
+                        <div style="font-size: 48px; margin-bottom: 15px;">⚠️</div>
+                        <h3 style="margin: 0 0 10px 0; font-weight: 500;">Error loading expenses</h3>
+                        <p style="margin: 0; color: #c5221f; font-size: 14px;">${error.message}</p>
+                    </div>
                 `;
-            });
-            
-            tableHTML += `
-                        </tbody>
-                    </table>
-                </div>
-            `;
-            
-            document.getElementById('expenseDetails').innerHTML = tableHTML;
-        } else {
-            document.getElementById('expenseDetails').innerHTML = `
-                <div style="text-align: center; padding: 40px 20px; color: #5f6368; background: #f8f9fa; border-radius: 8px; margin: 20px 0;">
-                    <div style="font-size: 48px; margin-bottom: 15px; color: #dadce0;">📊</div>
-                    <h3 style="margin: 0 0 10px 0; font-weight: 500; color: #3c4043;">No expenses found</h3>
-                </div>
-            `;
+            }
         }
         
-    } catch (error) {
-        console.error('Error loading expenses:', error);
-        document.getElementById('expenseDetails').innerHTML = `
-            <div style="text-align: center; padding: 40px 20px; color: #d93025; background: #fce8e6; border-radius: 8px; margin: 20px 0;">
-                <div style="font-size: 48px; margin-bottom: 15px;">⚠️</div>
-                <h3 style="margin: 0 0 10px 0; font-weight: 500;">Error loading expenses</h3>
-                <p style="margin: 0; color: #c5221f; font-size: 14px;">${error.message}</p>
-                <p style="margin-top: 10px; font-size: 12px;">Check browser console (F12) for API response</p>
-            </div>
-        `;
-    }
-}
-
+        // NEW: Apply filters to expenses
+        function applyFilters(expenses) {
+            const sortBy = document.getElementById('sortBy').value;
+            const filterBy = document.getElementById('filterBy').value;
+            
+            let filtered = [...expenses];
+            
+            // Apply category filter
+            if (filterBy !== 'all') {
+                // Note: Your expense data doesn't have category field in the summary
+                // If you want category filtering, you need to include it in the API response
+                // For now, this is a placeholder
+                // filtered = filtered.filter(expense => expense.category === filterBy);
+            }
+            
+            // Apply sorting
+            if (sortBy === 'date') {
+                filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+            } else if (sortBy === 'amount') {
+                filtered.sort((a, b) => parseFloat(b.amount || 0) - parseFloat(a.amount || 0));
+            }
+            
+            return filtered;
+        }
+        
+        // NEW: Show expense detail view
+        function showExpenseDetail(index) {
+            if (!expensesData[index]) {
+                showAlert('Expense not found', 'error');
+                return;
+            }
+            
+            const expense = expensesData[index];
+            
+            // Format date nicely
+            const dateStr = expense.date ? new Date(expense.date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            }) : 'Not specified';
+            
+            const detailHTML = `
+                <div class="detail-card">
+                    <div class="detail-row">
+                        <span class="detail-label">Date</span>
+                        <span class="detail-value">${dateStr}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Description</span>
+                        <span class="detail-value">${expense.description || 'N/A'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Amount</span>
+                        <span class="detail-value amount">${expense.amount || '0'} ${expense.currency || ''}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Paid By</span>
+                        <span class="detail-value">${expense.paidBy || 'N/A'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Amount Per Person</span>
+                        <span class="detail-value per-person">${expense.perPerson || '0'} ${expense.currency || ''}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Category</span>
+                        <span class="detail-value">${expense.category || 'Not specified'}</span>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 20px; color: #666; font-size: 14px;">
+                    <p>Expense recorded on ${dateStr}</p>
+                </div>
+            `;
+            
+            document.getElementById('expenseDetailContent').innerHTML = detailHTML;
+            switchTab('detail');
+        }
+        
+        // NEW: Back to summary from detail view
+        function backToSummary() {
+            switchTab('summary');
+        }
         
         async function loadSettlementPlan() {
             try {
