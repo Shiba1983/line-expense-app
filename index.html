@@ -1,6 +1,3 @@
-V1 Table Version Old LIFF 26jan
-
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -80,40 +77,61 @@ V1 Table Version Old LIFF 26jan
             padding-bottom: 8px;
         }
         
-       /* Expense Table */
-.expense-table {
-    width: 100%;
-    min-width: 650px; /* Increased from 600px */
-    border-collapse: collapse;
-    margin-top: 10px;
-    table-layout: auto; /* Allow columns to size based on content */
-}
-.expense-table th {
-    background: #f8f9fa;
-    padding: 12px 8px;
-    text-align: left;
-    font-weight: 600;
-    color: #555;
-    border-bottom: 2px solid #e0e0e0;
-    white-space: nowrap; /* Prevent header wrapping */
-}
-.expense-table td {
-    padding: 12px 8px;
-    border-bottom: 1px solid #f0f0f0;
-}
-.expense-table tr:last-child td {
-    border-bottom: none;
-}
-.expense-table tr:hover {
-    background: #f9f9f9;
-}
-
-/* Ensure table wrapper allows horizontal scroll */
-.summary-section > div {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
+        /* Expense Table */
+        .expense-table {
+            width: 100%;
+            min-width: 700px;
+            border-collapse: collapse;
+            margin-top: 10px;
+            table-layout: auto;
+        }
+        .expense-table th {
+            background: #f8f9fa;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: 600;
+            color: #555;
+            border-bottom: 2px solid #e0e0e0;
+            white-space: nowrap;
+        }
+        .expense-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .expense-table tr:last-child td {
+            border-bottom: none;
+        }
+        .expense-table tr:hover {
+            background: #f9f9f9;
+        }
+        
+        /* Action Buttons in Table */
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        .btn-edit, .btn-delete {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .btn-edit {
+            background: #667eea;
+            color: white;
+        }
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-edit:hover {
+            background: #5568d3;
+        }
+        .btn-delete:hover {
+            background: #c82333;
+        }
         
         /* Settlement Plan */
         .settlement-card {
@@ -213,45 +231,137 @@ V1 Table Version Old LIFF 26jan
             padding: 12px;
         }
         
-               /* Responsive Styles */
-@media (max-width: 480px) {
-    .expense-table {
-        display: table;
-        font-size: 12px;
-    }
-    
-    .expense-table th,
-    .expense-table td {
-        padding: 8px 5px;
-        font-size: 12px;
-    }
-    
-    .expense-table th:nth-child(2),
-    .expense-table td:nth-child(2) {
-        max-width: 100px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    
-    .stats-container {
-        grid-template-columns: 1fr;
-    }
-    
-  
-}
-
-    
-    /* Add visual indicator for scrollable content */
-    .summary-section > div::after {
-        content: "← Swipe to see more →";
-        display: block;
-        text-align: center;
-        color: #999;
-        font-size: 11px;
-        margin-top: 5px;
-        font-style: italic;
-    }
-}
+        /* Form Styles */
+        .input-group { 
+            margin: 15px 0; 
+        }
+        .input-group label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: 600; 
+            color: #333; 
+        }
+        .input-group input, .input-group select { 
+            width: 100%; 
+            padding: 15px; 
+            border: 2px solid #e0e0e0; 
+            border-radius: 10px; 
+            font-size: 16px; 
+        }
+        .input-group input:focus, .input-group select:focus { 
+            border-color: #667eea; 
+            outline: none; 
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); 
+        }
+        .participants-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 10px; 
+            margin: 10px 0; 
+        }
+        .participant-checkbox { 
+            display: flex; 
+            align-items: center; 
+            padding: 10px; 
+            background: #f5f5f5; 
+            border-radius: 8px; 
+            cursor: pointer; 
+        }
+        .participant-checkbox input { 
+            width: auto; 
+            margin-right: 10px; 
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal.active {
+            display: block;
+        }
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h2 {
+            color: white;
+            margin: 0;
+        }
+        .modal-close {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+        .modal-body {
+            padding: 25px;
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 480px) {
+            .expense-table {
+                display: table;
+                font-size: 11px;
+            }
+            
+            .expense-table th,
+            .expense-table td {
+                padding: 8px 4px;
+                font-size: 11px;
+            }
+            
+            .expense-table th:nth-child(2),
+            .expense-table td:nth-child(2) {
+                max-width: 80px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn-edit, .btn-delete {
+                padding: 4px 8px;
+                font-size: 10px;
+            }
+        }
+        
+        .summary-section > div::after {
+            content: "← Swipe to see more →";
+            display: block;
+            text-align: center;
+            color: #999;
+            font-size: 11px;
+            margin-top: 5px;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -319,7 +429,7 @@ V1 Table Version Old LIFF 26jan
                 </div>
             </div>
             
-            <!-- ADD EXPENSE TAB (Your existing code) -->
+            <!-- ADD EXPENSE TAB -->
             <div id="expenseTab" class="tab-content">
                 <div class="card">
                     <h2>➕ Add New Expense</h2>
@@ -382,9 +492,6 @@ V1 Table Version Old LIFF 26jan
                     </div>
                     
                     <button onclick="submitExpense()" class="action-button">➕ Add Expense</button>
-                    
-                    <div id="successMessage" class="success-message"></div>
-                    <div id="errorMessage" class="error-message"></div>
                 </div>
             </div>
             
@@ -411,6 +518,84 @@ V1 Table Version Old LIFF 26jan
                         <!-- Results will appear here -->
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT EXPENSE MODAL -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✏️ Edit Expense</h2>
+                <button class="modal-close" onclick="closeEditModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editRow">
+                
+                <div class="input-group">
+                    <label>💰 Category</label>
+                    <select id="editCategory">
+                        <option value="Food">🍔 Food & Drinks</option>
+                        <option value="Transport">🚗 Transportation</option>
+                        <option value="Accommodation">🏨 Accommodation</option>
+                        <option value="Activities">🎡 Activities</option>
+                        <option value="Shopping">🛍️ Shopping</option>
+                        <option value="Alcohol">🍺 Alcohol</option>
+                        <option value="Other">📝 Other</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label>📝 Description / Item</label>
+                    <input type="text" id="editDescription" placeholder="What was it?">
+                </div>
+                
+                <div class="input-group">
+                    <label>📅 Date</label>
+                    <input type="date" id="editDate">
+                </div>
+                
+                <div class="input-group">
+                    <label>💸 Amount</label>
+                    <input type="number" id="editAmount" placeholder="Enter amount" step="0.01">
+                </div>
+                
+                <div class="input-group">
+                    <label>🌐 Currency</label>
+                    <select id="editCurrency">
+                        <option value="THB">🇹🇭 THB (Baht)</option>
+                        <option value="USD">🇺🇸 USD (Dollar)</option>
+                        <option value="EUR">🇪🇺 EUR (Euro)</option>
+                        <option value="JPY">🇯🇵 JPY (Yen)</option>
+                        <option value="GBP">🇬🇧 GBP (Pound)</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label>👤 Paid By</label>
+                    <select id="editPaidBy">
+                        <!-- Participants will be loaded here -->
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label>👥 Split Between</label>
+                    <div id="editParticipantsContainer" class="participants-grid">
+                        <!-- Participants checkboxes will be loaded here -->
+                    </div>
+                    <button type="button" onclick="selectAllEditParticipants()" 
+                            style="margin-top: 10px; background: #6c757d; font-size: 14px; padding: 10px; border-radius: 8px; border: none; color: white; width: 100%;">
+                        Select All
+                    </button>
+                </div>
+                
+                <button onclick="updateExpense()" class="action-button">
+                    💾 Save Changes
+                </button>
+                
+                <button onclick="closeEditModal()" class="action-button" style="background: #6c757d;">
+                    ❌ Cancel
+                </button>
             </div>
         </div>
     </div>
@@ -556,15 +741,15 @@ V1 Table Version Old LIFF 26jan
                             <div class="stat-label">Total Expenses</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-value">${stats.totalAmount || '0'}</div>
-                            <div class="stat-label">Total Amount (THB)</div>
+                            <div class="stat-value">${stats.totalAmountTHB || '0'}</div>
+                            <div class="stat-label">Total Amount</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-value">${stats.participants || 0}</div>
                             <div class="stat-label">Participants</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-value">${stats.settlements || 0}</div>
+                            <div class="stat-value">${stats.settlementsNeeded || 0}</div>
                             <div class="stat-label">Settlements Needed</div>
                         </div>
                     `;
@@ -588,89 +773,93 @@ V1 Table Version Old LIFF 26jan
             }
         }
         
-async function loadExpenseDetails() {
-    try {
-        const response = await fetch(`${SUMMARY_API_URL}?action=getExpenseDetails&t=${Date.now()}`);
-        const text = await response.text();
-        
-        console.log('API Response Text:', text); // See raw response
-        
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch (e) {
-            throw new Error('Invalid JSON response from server');
-        }
-        
-        console.log('Parsed API Data:', data); // See parsed data
-        
-        if (data.success && data.expenses && data.expenses.length > 0) {
-            let tableHTML = `
-                <div style="overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0; padding: 0; width: 100%;">
-                    <table class="expense-table" style="margin: 0; width: 100%; border-collapse: collapse; font-size: 14px;">
-                        <thead>
-                            <tr style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">
-                                <th style="padding: 12px 8px; text-align: left; font-weight: 600;">Date</th>
-                                <th style="padding: 12px 8px; text-align: left; font-weight: 600;">Description</th>
-                                <th style="padding: 12px 8px; text-align: right; font-weight: 600;">Amount</th>
-                                <th style="padding: 12px 8px; text-align: center; font-weight: 600;">Currency</th>
-                                <th style="padding: 12px 8px; text-align: left; font-weight: 600;">Paid By</th>
-                                <th style="padding: 12px 8px; text-align: right; font-weight: 600;">Amount Per Person</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
-            
-            data.expenses.forEach(expense => {
-                // Convert everything to string, no formatting
-                const date = expense.date === null || expense.date === undefined ? '' : String(expense.date);
-                const description = expense.description === null || expense.description === undefined ? '' : String(expense.description);
-                const amount = expense.amount === null || expense.amount === undefined ? '' : String(expense.amount);
-                const currency = expense.currency === null || expense.currency === undefined ? '' : String(expense.currency);
-                const paidBy = expense.paidBy === null || expense.paidBy === undefined ? '' : String(expense.paidBy);
-                const perPerson = expense.perPerson === null || expense.perPerson === undefined ? '' : String(expense.perPerson);
+        async function loadExpenseDetails() {
+            try {
+                const response = await fetch(`${SUMMARY_API_URL}?action=getExpenseDetails&t=${Date.now()}`);
+                const text = await response.text();
                 
-                tableHTML += `
-                    <tr style="border-bottom: 1px solid #e9ecef;">
-                        <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef; white-space: nowrap;">${date}</td>
-                        <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${description}</td>
-                        <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef; text-align: right; white-space: nowrap;">${amount}</td>
-                        <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef; text-align: center;">${currency}</td>
-                        <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef;">${paidBy}</td>
-                        <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef; text-align: right; white-space: nowrap;">${perPerson}</td>
-                    </tr>
+                console.log('API Response Text:', text);
+                
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    throw new Error('Invalid JSON response from server');
+                }
+                
+                console.log('Parsed API Data:', data);
+                
+                if (data.success && data.expenses && data.expenses.length > 0) {
+                    let tableHTML = `
+                        <div style="overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0; padding: 0; width: 100%;">
+                            <table class="expense-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Description</th>
+                                        <th>Amount</th>
+                                        <th>Currency</th>
+                                        <th>Paid By</th>
+                                        <th>Participants</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+                    
+                    data.expenses.forEach(expense => {
+                        const date = formatDate(expense.date);
+                        const description = String(expense.description || '');
+                        const amount = String(expense.amount || '');
+                        const currency = String(expense.currency || '');
+                        const paidBy = String(expense.paidBy || '');
+                        const participants = String(expense.participants || '');
+                        
+                        tableHTML += `
+                            <tr>
+                                <td style="white-space: nowrap;">${date}</td>
+                                <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">${description}</td>
+                                <td style="text-align: right; white-space: nowrap;">${amount}</td>
+                                <td style="text-align: center;">${currency}</td>
+                                <td>${paidBy}</td>
+                                <td style="max-width: 120px; overflow: hidden; text-overflow: ellipsis; font-size: 11px;">${participants}</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn-edit" onclick="openEditModal(${expense.row})">✏️ Edit</button>
+                                        <button class="btn-delete" onclick="deleteExpense(${expense.row})">🗑️ Delete</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    
+                    tableHTML += `
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    
+                    document.getElementById('expenseDetails').innerHTML = tableHTML;
+                } else {
+                    document.getElementById('expenseDetails').innerHTML = `
+                        <div style="text-align: center; padding: 40px 20px; color: #5f6368; background: #f8f9fa; border-radius: 8px; margin: 20px 0;">
+                            <div style="font-size: 48px; margin-bottom: 15px; color: #dadce0;">📊</div>
+                            <h3 style="margin: 0 0 10px 0; font-weight: 500; color: #3c4043;">No expenses found</h3>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Error loading expenses:', error);
+                document.getElementById('expenseDetails').innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px; color: #d93025; background: #fce8e6; border-radius: 8px; margin: 20px 0;">
+                        <div style="font-size: 48px; margin-bottom: 15px;">⚠️</div>
+                        <h3 style="margin: 0 0 10px 0; font-weight: 500;">Error loading expenses</h3>
+                        <p style="margin: 0; color: #c5221f; font-size: 14px;">${error.message}</p>
+                    </div>
                 `;
-            });
-            
-            tableHTML += `
-                        </tbody>
-                    </table>
-                </div>
-            `;
-            
-            document.getElementById('expenseDetails').innerHTML = tableHTML;
-        } else {
-            document.getElementById('expenseDetails').innerHTML = `
-                <div style="text-align: center; padding: 40px 20px; color: #5f6368; background: #f8f9fa; border-radius: 8px; margin: 20px 0;">
-                    <div style="font-size: 48px; margin-bottom: 15px; color: #dadce0;">📊</div>
-                    <h3 style="margin: 0 0 10px 0; font-weight: 500; color: #3c4043;">No expenses found</h3>
-                </div>
-            `;
+            }
         }
-        
-    } catch (error) {
-        console.error('Error loading expenses:', error);
-        document.getElementById('expenseDetails').innerHTML = `
-            <div style="text-align: center; padding: 40px 20px; color: #d93025; background: #fce8e6; border-radius: 8px; margin: 20px 0;">
-                <div style="font-size: 48px; margin-bottom: 15px;">⚠️</div>
-                <h3 style="margin: 0 0 10px 0; font-weight: 500;">Error loading expenses</h3>
-                <p style="margin: 0; color: #c5221f; font-size: 14px;">${error.message}</p>
-                <p style="margin-top: 10px; font-size: 12px;">Check browser console (F12) for API response</p>
-            </div>
-        `;
-    }
-}
-
         
         async function loadSettlementPlan() {
             try {
@@ -723,6 +912,142 @@ async function loadExpenseDetails() {
                     </button>
                 </div>
             `;
+        }
+        
+        // ========== EDIT EXPENSE FUNCTIONS ==========
+        async function openEditModal(row) {
+            try {
+                // Load expense data
+                const response = await fetch(`${EXPENSE_API_URL}?action=getExpense&row=${row}&t=${Date.now()}`);
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to load expense');
+                }
+                
+                const expense = data.expense;
+                
+                // Populate edit form
+                document.getElementById('editRow').value = expense.row;
+                document.getElementById('editCategory').value = expense.category;
+                document.getElementById('editDescription').value = expense.description;
+                document.getElementById('editDate').value = formatDateForInput(expense.date);
+                document.getElementById('editAmount').value = expense.amount;
+                document.getElementById('editCurrency').value = expense.currency;
+                document.getElementById('editPaidBy').value = expense.paidBy;
+                
+                // Set participants checkboxes
+                const selectedParticipants = expense.participants.split(',').map(p => p.trim());
+                document.querySelectorAll('#editParticipantsContainer input[type="checkbox"]').forEach(cb => {
+                    cb.checked = selectedParticipants.includes(cb.value);
+                });
+                
+                // Show modal
+                document.getElementById('editModal').classList.add('active');
+                
+            } catch (error) {
+                console.error('Error opening edit modal:', error);
+                showAlert('Error loading expense: ' + error.message, 'error');
+            }
+        }
+        
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+        }
+        
+        async function updateExpense() {
+            const row = document.getElementById('editRow').value;
+            const category = document.getElementById('editCategory').value;
+            const description = document.getElementById('editDescription').value;
+            const date = document.getElementById('editDate').value;
+            const amount = document.getElementById('editAmount').value;
+            const currency = document.getElementById('editCurrency').value;
+            const paidBy = document.getElementById('editPaidBy').value;
+            
+            // Get selected participants
+            const checkboxes = document.querySelectorAll('#editParticipantsContainer input[type="checkbox"]:checked');
+            const selectedParticipants = Array.from(checkboxes).map(cb => cb.value);
+            
+            // Validation
+            if (!description) {
+                showAlert('Please enter a description', 'error');
+                return;
+            }
+            if (!amount || parseFloat(amount) <= 0) {
+                showAlert('Please enter a valid amount', 'error');
+                return;
+            }
+            if (selectedParticipants.length === 0) {
+                showAlert('Please select at least one participant', 'error');
+                return;
+            }
+            
+            const expenseData = {
+                action: 'updateExpense',
+                row: parseInt(row),
+                category: category,
+                description: description,
+                date: date,
+                amount: parseFloat(amount),
+                currency: currency,
+                paidBy: paidBy,
+                participants: selectedParticipants
+            };
+            
+            try {
+                const response = await fetch(EXPENSE_API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(expenseData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('✅ Expense updated successfully!', 'success');
+                    closeEditModal();
+                    
+                    // Refresh summary
+                    setTimeout(() => loadSummaryData(), 1000);
+                } else {
+                    showAlert('Error: ' + (result.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                showAlert('Network error. Please try again.', 'error');
+            }
+        }
+        
+        async function deleteExpense(row) {
+            if (!confirm('Are you sure you want to delete this expense?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(EXPENSE_API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'deleteExpense',
+                        row: row
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('✅ Expense deleted successfully!', 'success');
+                    
+                    // Refresh summary
+                    setTimeout(() => loadSummaryData(), 1000);
+                } else {
+                    showAlert('Error: ' + (result.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                showAlert('Network error. Please try again.', 'error');
+            }
+        }
+        
+        function selectAllEditParticipants() {
+            const checkboxes = document.querySelectorAll('#editParticipantsContainer input[type="checkbox"]');
+            checkboxes.forEach(cb => cb.checked = true);
         }
         
         // ========== SETTLEMENT FUNCTIONS ==========
@@ -781,7 +1106,7 @@ async function loadExpenseDetails() {
             }
         }
         
-        // ========== EXPENSE FUNCTIONS (Your existing code) ==========
+        // ========== EXPENSE FUNCTIONS ==========
         async function loadParticipants() {
             try {
                 const response = await fetch(EXPENSE_API_URL + '?action=getParticipants');
@@ -793,35 +1118,52 @@ async function loadExpenseDetails() {
                 
                 participantsList = data.participants;
                 
-                // Populate Paid By dropdown
+                // Populate Paid By dropdowns (both add and edit forms)
                 const paidBySelect = document.getElementById('paidBy');
+                const editPaidBySelect = document.getElementById('editPaidBy');
+                
                 paidBySelect.innerHTML = '';
+                editPaidBySelect.innerHTML = '';
+                
                 participantsList.forEach(person => {
+                    // Add form
                     const option = document.createElement('option');
                     option.value = person;
                     option.textContent = person;
                     paidBySelect.appendChild(option);
+                    
+                    // Edit form
+                    const editOption = document.createElement('option');
+                    editOption.value = person;
+                    editOption.textContent = person;
+                    editPaidBySelect.appendChild(editOption);
                 });
                 
-                // Create participant checkboxes
-                const container = document.getElementById('participantsContainer');
-                container.innerHTML = '';
-                participantsList.forEach(person => {
-                    const div = document.createElement('div');
-                    div.className = 'participant-checkbox';
-                    div.innerHTML = `
-                        <input type="checkbox" id="participant_${person}" 
-                               value="${person}" checked>
-                        <label for="participant_${person}" style="margin:0; cursor:pointer;">
-                            ${person}
-                        </label>
-                    `;
-                    container.appendChild(div);
-                });
+                // Create participant checkboxes (both forms)
+                createParticipantCheckboxes('participantsContainer');
+                createParticipantCheckboxes('editParticipantsContainer');
                 
             } catch (error) {
                 showAlert('Could not load participants: ' + error.message, 'error');
             }
+        }
+        
+        function createParticipantCheckboxes(containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            participantsList.forEach(person => {
+                const div = document.createElement('div');
+                div.className = 'participant-checkbox';
+                div.innerHTML = `
+                    <input type="checkbox" id="${containerId}_${person}" 
+                           value="${person}" checked>
+                    <label for="${containerId}_${person}" style="margin:0; cursor:pointer;">
+                        ${person}
+                    </label>
+                `;
+                container.appendChild(div);
+            });
         }
         
         async function submitExpense() {
@@ -932,12 +1274,53 @@ async function loadExpenseDetails() {
             }, 3000);
         }
         
+        function formatDate(dateValue) {
+            if (!dateValue) return '';
+            
+            try {
+                const date = new Date(dateValue);
+                if (isNaN(date.getTime())) {
+                    return String(dateValue);
+                }
+                return date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            } catch (e) {
+                return String(dateValue);
+            }
+        }
+        
+        function formatDateForInput(dateValue) {
+            if (!dateValue) return '';
+            
+            try {
+                const date = new Date(dateValue);
+                if (isNaN(date.getTime())) {
+                    return '';
+                }
+                // Return YYYY-MM-DD format for date input
+                return date.toISOString().split('T')[0];
+            } catch (e) {
+                return '';
+            }
+        }
+        
         function openGoogleSheet() {
             const sheetUrl = 'https://docs.google.com/spreadsheets/d/18DpkJs6AYzfQvZV5iy08nTqa2l3A4lQdYL6AuBsWCeg/edit';
             if (liff.isInClient()) {
                 liff.openWindow({ url: sheetUrl, external: true });
             } else {
                 window.open(sheetUrl, '_blank');
+            }
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('editModal');
+            if (event.target == modal) {
+                closeEditModal();
             }
         }
         
@@ -955,15 +1338,6 @@ async function loadExpenseDetails() {
                 from { transform: translateX(-50%) translateY(0); opacity: 1; }
                 to { transform: translateX(-50%) translateY(-100%); opacity: 0; }
             }
-            .input-group { margin: 15px 0; }
-            .input-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
-            .input-group input, .input-group select { width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; }
-            .input-group input:focus, .input-group select:focus { border-color: #667eea; outline: none; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
-            .participants-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0; }
-            .participant-checkbox { display: flex; align-items: center; padding: 10px; background: #f5f5f5; border-radius: 8px; cursor: pointer; }
-            .participant-checkbox input { width: auto; margin-right: 10px; }
-            .success-message { background: #d4edda; color: #155724; padding: 15px; border-radius: 10px; margin: 15px 0; display: none; }
-            .error-message { background: #f8d7da; color: #721c24; padding: 15px; border-radius: 10px; margin: 15px 0; display: none; }
         `;
         document.head.appendChild(style);
     </script>
