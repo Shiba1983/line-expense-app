@@ -1,3 +1,5 @@
+29/1 V1
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -6,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-           * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             max-width: 500px;
@@ -509,15 +511,6 @@
             margin-top: 5px;
             font-style: italic;
         }
-        /* Add this to make expense rows more clickable */
-        .clickable-expense {
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        .clickable-expense:hover {
-            background-color: #f5f5f5 !important;
-        }
     </style>
 </head>
 <body>
@@ -818,7 +811,6 @@
 
     <script>
         // ========== CONFIGURATION ==========
-        // Replace this with your actual deployment URL
         const API_URL = 'https://script.google.com/macros/s/AKfycbyuXL-EqGENNv7zc8o6yvEn9XJZHXoc5z2nkWnFCHdbHembGFxHUWKMtmjbKgHu4MA/exec';
         const LIFF_ID = '2008858986-uLQlNN1S';
         
@@ -960,7 +952,7 @@
                             <div class="stat-label">Total Expenses</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-value">${stats.totalAmountFormatted || '0'}</div>
+                            <div class="stat-value">${stats.totalAmountTHB || '0'}</div>
                             <div class="stat-label">Total Amount</div>
                         </div>
                         <div class="stat-card">
@@ -992,56 +984,56 @@
             }
         }
         
-        // FIXED: This is the corrected function
         async function loadExpenseDetails() {
             try {
                 const response = await fetch(`${API_URL}?action=getExpenseDetails&t=${Date.now()}`);
                 const text = await response.text();
                 
-                console.log('API Response:', text);
-                
                 let data;
                 try {
                     data = JSON.parse(text);
                 } catch (e) {
-                    console.error('JSON parse error:', e);
-                    throw new Error('Invalid JSON response from server: ' + text.substring(0, 100));
+                    throw new Error('Invalid JSON response from server');
                 }
-                
-                console.log('Parsed data:', data);
                 
                 if (data.success && data.expenses && data.expenses.length > 0) {
                     let tableHTML = `
-                        <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
-                            <table class="expense-table">
+                        <div style="overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0; padding: 0; width: 100%;">
+                            <table class="expense-table" style="margin: 0; width: 100%; border-collapse: collapse; font-size: 14px;">
                                 <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Description</th>
-                                        <th>Amount</th>
-                                        <th>Currency</th>
-                                        <th>Paid By</th>
-                                        <th>Per Person</th>
+                                    <tr style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                                        <th style="padding: 12px 8px; text-align: left; font-weight: 600;">Date</th>
+                                        <th style="padding: 12px 8px; text-align: left; font-weight: 600;">Description</th>
+                                        <th style="padding: 12px 8px; text-align: right; font-weight: 600;">Amount</th>
+                                        <th style="padding: 12px 8px; text-align: center; font-weight: 600;">Currency</th>
+                                        <th style="padding: 12px 8px; text-align: left; font-weight: 600;">Paid By</th>
+                                        <th style="padding: 12px 8px; text-align: right; font-weight: 600;">Amount Per Person</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                     `;
                     
-                    data.expenses.forEach((expense) => {
-                        // Ensure expense has an ID (timestamp from Line Input)
-                        if (!expense.id) {
-                            console.warn('Expense missing ID:', expense);
-                            return;
-                        }
+                    data.expenses.forEach((expense, index) => {
+                        // Generate a unique ID for each expense
+                        const expenseId = expense.id || `expense-${index}-${Date.now()}`;
+                        expense.id = expenseId;
+                        
+                        // Convert everything to string
+                        const date = expense.date === null || expense.date === undefined ? '' : String(expense.date);
+                        const description = expense.description === null || expense.description === undefined ? '' : String(expense.description);
+                        const amount = expense.amount === null || expense.amount === undefined ? '' : String(expense.amount);
+                        const currency = expense.currency === null || expense.currency === undefined ? '' : String(expense.currency);
+                        const paidBy = expense.paidBy === null || expense.paidBy === undefined ? '' : String(expense.paidBy);
+                        const perPerson = expense.perPerson === null || expense.perPerson === undefined ? '' : String(expense.perPerson);
                         
                         tableHTML += `
-                            <tr class="clickable-expense" onclick="showExpenseDetail('${expense.id.replace(/'/g, "\\'")}')">
-                                <td>${expense.date || '-'}</td>
-                                <td>${expense.description || '-'}</td>
-                                <td style="text-align: right;">${expense.amount || '0'}</td>
-                                <td style="text-align: center;">${expense.currency || 'THB'}</td>
-                                <td>${expense.paidBy || '-'}</td>
-                                <td style="text-align: right;">${expense.perPerson || '0'}</td>
+                            <tr class="expense-row" onclick="showExpenseDetail(${JSON.stringify(expense).replace(/"/g, '&quot;')})" style="cursor: pointer; border-bottom: 1px solid #e9ecef;">
+                                <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef; white-space: nowrap;">${date}</td>
+                                <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${description}</td>
+                                <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef; text-align: right; white-space: nowrap;">${amount}</td>
+                                <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef; text-align: center;">${currency}</td>
+                                <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef;">${paidBy}</td>
+                                <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef; text-align: right; white-space: nowrap;">${perPerson}</td>
                             </tr>
                         `;
                     });
@@ -1055,10 +1047,9 @@
                     document.getElementById('expenseDetails').innerHTML = tableHTML;
                 } else {
                     document.getElementById('expenseDetails').innerHTML = `
-                        <div style="text-align: center; padding: 40px 20px; color: #5f6368; background: #f8f9fa; border-radius: 8px;">
+                        <div style="text-align: center; padding: 40px 20px; color: #5f6368; background: #f8f9fa; border-radius: 8px; margin: 20px 0;">
                             <div style="font-size: 48px; margin-bottom: 15px; color: #dadce0;">📊</div>
                             <h3 style="margin: 0 0 10px 0; font-weight: 500; color: #3c4043;">No expenses found</h3>
-                            <p style="color: #5f6368;">Add your first expense in the "Add Expense" tab</p>
                         </div>
                     `;
                 }
@@ -1066,7 +1057,7 @@
             } catch (error) {
                 console.error('Error loading expenses:', error);
                 document.getElementById('expenseDetails').innerHTML = `
-                    <div style="text-align: center; padding: 40px 20px; color: #d93025; background: #fce8e6; border-radius: 8px;">
+                    <div style="text-align: center; padding: 40px 20px; color: #d93025; background: #fce8e6; border-radius: 8px; margin: 20px 0;">
                         <div style="font-size: 48px; margin-bottom: 15px;">⚠️</div>
                         <h3 style="margin: 0 0 10px 0; font-weight: 500;">Error loading expenses</h3>
                         <p style="margin: 0; color: #c5221f; font-size: 14px;">${error.message}</p>
@@ -1075,50 +1066,265 @@
             }
         }
         
-        // FIXED: This function now accepts expenseId directly
-        async function showExpenseDetail(expenseId) {
-            console.log("Showing expense detail for ID:", expenseId);
-            
+        async function loadSettlementPlan() {
             try {
-                // First, try POST request
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'getExpenseById',
-                        expenseId: expenseId
-                    })
-                });
+                const response = await fetch(`${API_URL}?action=getSettlementPlan&t=${Date.now()}`);
+                const data = await response.json();
                 
+                if (data.success && data.settlements && data.settlements.length > 0) {
+                    let settlementsHTML = '';
+                    
+                    data.settlements.forEach(item => {
+                        if (item.name && item.instructions) {
+                            settlementsHTML += `
+                                <div class="settlement-card">
+                                    <div class="settlement-header">
+                                        <div class="settlement-person">${item.name}</div>
+                                    </div>
+                                    <div class="settlement-details">${item.instructions}</div>
+                                </div>
+                            `;
+                        }
+                    });
+                    
+                    if (settlementsHTML) {
+                        document.getElementById('settlementPlan').innerHTML = settlementsHTML;
+                    } else {
+                        showNoSettlementData();
+                    }
+                } else {
+                    showNoSettlementData();
+                }
+                
+            } catch (error) {
+                console.error('Error loading settlement:', error);
+                document.getElementById('settlementPlan').innerHTML = `
+                    <div style="text-align: center; padding: 30px; color: #c62828; background: #ffebee; border-radius: 10px;">
+                        <p>Error loading settlement plan.</p>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function showNoSettlementData() {
+            document.getElementById('settlementPlan').innerHTML = `
+                <div style="text-align: center; padding: 30px; color: #666; background: #f9f9f9; border-radius: 10px;">
+                    <p>No settlement plan found.</p>
+                    <p>Run settlement in the "Settlement" tab first.</p>
+                    <button onclick="switchTab('settlement')" style="margin-top: 10px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px;">
+                        Go to Settlement
+                    </button>
+                </div>
+            `;
+        }
+        
+        // ========== SETTLEMENT FUNCTIONS ==========
+        async function runSettlement() {
+            try {
+                // Show loading
+                document.getElementById('settlementLoading').style.display = 'block';
+                document.getElementById('settlementResult').style.display = 'none';
+                
+                const url = `${API_URL}?action=settle&t=${Date.now()}`;
+                console.log("Running settlement:", url);
+                
+                const response = await fetch(url);
                 const text = await response.text();
-                console.log("API Response:", text);
                 
                 let data;
                 try {
                     data = JSON.parse(text);
                 } catch (e) {
-                    console.error("JSON parse error:", e);
-                    // Try GET request as fallback
-                    const getResponse = await fetch(`${API_URL}?action=getExpenseById&expenseId=${encodeURIComponent(expenseId)}&t=${Date.now()}`);
-                    const getText = await getResponse.text();
-                    data = JSON.parse(getText);
+                    throw new Error("Invalid response from server");
                 }
                 
-                console.log("Expense data:", data);
+                // Hide loading
+                document.getElementById('settlementLoading').style.display = 'none';
                 
-                if (data.success && data.expense) {
+                if (data.success) {
+                    document.getElementById('settlementResult').innerHTML = `
+                        <div style="color: #155724;">
+                            <h4 style="margin-bottom: 10px;">✅ Settlement Complete!</h4>
+                            <p>${data.message}</p>
+                            <p style="margin-top: 10px; font-size: 14px;">Results written to Google Sheet. Refresh summary to see updates.</p>
+                        </div>
+                    `;
+                    document.getElementById('settlementResult').style.display = 'block';
+                    
+                    // Refresh summary after 2 seconds
+                    setTimeout(() => {
+                        if (currentTab === 'summary') {
+                            loadSummaryData();
+                        }
+                    }, 2000);
+                } else {
+                    throw new Error(data.error || data.message || "Settlement failed");
+                }
+                
+            } catch (error) {
+                console.error('Settlement error:', error);
+                document.getElementById('settlementLoading').style.display = 'none';
+                document.getElementById('settlementResult').innerHTML = `
+                    <div style="color: #721c24;">
+                        <h4 style="margin-bottom: 10px;">❌ Settlement Failed</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+                document.getElementById('settlementResult').style.display = 'block';
+            }
+        }
+        
+        // ========== EXPENSE MANAGEMENT FUNCTIONS ==========
+        async function loadParticipants() {
+            try {
+                const response = await fetch(API_URL + '?action=getParticipants');
+                const data = await response.json();
+                
+                if (!data.participants) {
+                    throw new Error('No participants found');
+                }
+                
+                participantsList = data.participants;
+                
+                // Populate Paid By dropdown (for add expense)
+                const paidBySelect = document.getElementById('paidBy');
+                paidBySelect.innerHTML = '';
+                participantsList.forEach(person => {
+                    const option = document.createElement('option');
+                    option.value = person;
+                    option.textContent = person;
+                    paidBySelect.appendChild(option);
+                });
+                
+                // Populate Paid By dropdown (for edit expense)
+                const editPaidBySelect = document.getElementById('editPaidBy');
+                editPaidBySelect.innerHTML = '';
+                participantsList.forEach(person => {
+                    const option = document.createElement('option');
+                    option.value = person;
+                    option.textContent = person;
+                    editPaidBySelect.appendChild(option);
+                });
+                
+                // Create participant checkboxes (for add expense)
+                const container = document.getElementById('participantsContainer');
+                container.innerHTML = '';
+                participantsList.forEach(person => {
+                    const div = document.createElement('div');
+                    div.className = 'participant-checkbox';
+                    div.innerHTML = `
+                        <input type="checkbox" id="participant_${person}" 
+                               value="${person}" checked>
+                        <label for="participant_${person}" style="margin:0; cursor:pointer;">
+                            ${person}
+                        </label>
+                    `;
+                    container.appendChild(div);
+                });
+                
+                // Create participant checkboxes (for edit expense - initially empty)
+                const editContainer = document.getElementById('editParticipantsContainer');
+                editContainer.innerHTML = '';
+                
+            } catch (error) {
+                showAlert('Could not load participants: ' + error.message, 'error');
+            }
+        }
+        
+        async function submitExpense() {
+            const category = document.getElementById('category').value;
+            const description = document.getElementById('description').value;
+            const date = document.getElementById('date').value;
+            const amount = document.getElementById('amount').value;
+            const currency = document.getElementById('currency').value;
+            const paidBy = document.getElementById('paidBy').value;
+            
+            // Get selected participants
+            const checkboxes = document.querySelectorAll('#participantsContainer input[type="checkbox"]:checked');
+            const selectedParticipants = Array.from(checkboxes).map(cb => cb.value);
+            
+            // Validation
+            if (!description) {
+                showAlert('Please enter a description', 'error');
+                return;
+            }
+            if (!amount || parseFloat(amount) <= 0) {
+                showAlert('Please enter a valid amount', 'error');
+                return;
+            }
+            if (selectedParticipants.length === 0) {
+                showAlert('Please select at least one participant', 'error');
+                return;
+            }
+            
+            const expenseData = {
+                action: 'saveExpense',
+                category: category,
+                description: description,
+                date: date,
+                amount: parseFloat(amount),
+                currency: currency,
+                paidBy: paidBy,
+                participants: selectedParticipants
+            };
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(expenseData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('✅ Expense added successfully!', 'success');
+                    // Clear form fields
+                    document.getElementById('description').value = '';
+                    document.getElementById('amount').value = '';
+                    
+                    // Refresh summary if on summary tab
+                    if (currentTab === 'summary') {
+                        setTimeout(() => loadSummaryData(), 1000);
+                    }
+                } else {
+                    showAlert('Error: ' + (result.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                showAlert('Network error. Please try again.', 'error');
+            }
+        }
+        
+        function selectAllParticipants() {
+            const checkboxes = document.querySelectorAll('#participantsContainer input[type="checkbox"]');
+            checkboxes.forEach(cb => cb.checked = true);
+        }
+        
+        // ========== EXPENSE DETAIL FUNCTIONS ==========
+        async function showExpenseDetail(expenseData) {
+            try {
+                // Get the full expense data by ID
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'getExpenseById',
+                        expenseId: expenseData.id
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
                     currentExpenseData = data.expense;
                     currentExpenseId = data.expense.id;
                     
                     // Update modal display
-                    document.getElementById('detailCategory').textContent = data.expense.category || '-';
-                    document.getElementById('detailDescription').textContent = data.expense.description || '-';
-                    document.getElementById('detailDate').textContent = formatDateForDisplay(data.expense.date) || '-';
-                    document.getElementById('detailAmount').textContent = data.expense.amount || '0';
-                    document.getElementById('detailCurrency').textContent = data.expense.currency || 'THB';
-                    document.getElementById('detailPaidBy').textContent = data.expense.paidBy || '-';
+                    document.getElementById('detailCategory').textContent = data.expense.category;
+                    document.getElementById('detailDescription').textContent = data.expense.description;
+                    document.getElementById('detailDate').textContent = formatDateForDisplay(data.expense.date);
+                    document.getElementById('detailAmount').textContent = data.expense.amount;
+                    document.getElementById('detailCurrency').textContent = data.expense.currency;
+                    document.getElementById('detailPaidBy').textContent = data.expense.paidBy;
                     
                     // Update participants
                     const participantsContainer = document.getElementById('detailParticipants');
@@ -1131,27 +1337,25 @@
                             tag.textContent = participant;
                             participantsContainer.appendChild(tag);
                         });
-                    } else {
-                        participantsContainer.innerHTML = '<div style="color: #999; font-style: italic;">No participants</div>';
                     }
                     
                     // Pre-fill edit form
-                    document.getElementById('editCategory').value = data.expense.category || '';
-                    document.getElementById('editDescription').value = data.expense.description || '';
-                    document.getElementById('editDate').value = data.expense.date || '';
-                    document.getElementById('editAmount').value = data.expense.amount || '';
-                    document.getElementById('editCurrency').value = data.expense.currency || 'THB';
-                    document.getElementById('editPaidBy').value = data.expense.paidBy || '';
+                    document.getElementById('editCategory').value = data.expense.category;
+                    document.getElementById('editDescription').value = data.expense.description;
+                    document.getElementById('editDate').value = data.expense.date;
+                    document.getElementById('editAmount').value = data.expense.amount;
+                    document.getElementById('editCurrency').value = data.expense.currency;
+                    document.getElementById('editPaidBy').value = data.expense.paidBy;
                     
                     // Update edit form participants
-                    updateEditFormParticipants(data.expense.participants || []);
+                    updateEditFormParticipants(data.expense.participants);
                     
                     // Show modal
                     document.getElementById('expenseModal').classList.add('active');
                     document.body.style.overflow = 'hidden';
                     
                 } else {
-                    showAlert('Error loading expense details: ' + (data.error || 'Unknown error'), 'error');
+                    showAlert('Error loading expense details: ' + data.error, 'error');
                 }
                 
             } catch (error) {
@@ -1167,12 +1371,166 @@
             currentExpenseData = null;
         }
         
-        // ========== REST OF YOUR JAVASCRIPT FUNCTIONS ==========
-        // Keep all the other functions you have (loadSettlementPlan, runSettlement, 
-        // loadParticipants, submitExpense, enableEditMode, cancelEditMode, 
-        // updateEditFormParticipants, selectAllParticipantsEdit, saveEditedExpense,
-        // confirmDeleteExpense, closeConfirmModal, deleteExpense, etc.)
-        // Just make sure to copy them from your existing code
+        function enableEditMode() {
+            document.getElementById('expenseDetailView').classList.remove('active');
+            document.getElementById('expenseEditForm').classList.add('active');
+            document.getElementById('modalTitle').textContent = 'Edit Expense';
+        }
+        
+        function cancelEditMode() {
+            document.getElementById('expenseEditForm').classList.remove('active');
+            document.getElementById('expenseDetailView').classList.add('active');
+            document.getElementById('modalTitle').textContent = 'Expense Details';
+        }
+        
+        function updateEditFormParticipants(selectedParticipants) {
+            const container = document.getElementById('editParticipantsContainer');
+            container.innerHTML = '';
+            
+            participantsList.forEach(person => {
+                const div = document.createElement('div');
+                div.className = 'participant-checkbox';
+                const isChecked = selectedParticipants.includes(person);
+                div.innerHTML = `
+                    <input type="checkbox" id="edit_participant_${person}" 
+                           value="${person}" ${isChecked ? 'checked' : ''}>
+                    <label for="edit_participant_${person}" style="margin:0; cursor:pointer;">
+                        ${person}
+                    </label>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        function selectAllParticipantsEdit() {
+            const checkboxes = document.querySelectorAll('#editParticipantsContainer input[type="checkbox"]');
+            checkboxes.forEach(cb => cb.checked = true);
+        }
+        
+        async function saveEditedExpense() {
+            try {
+                // Get form values
+                const category = document.getElementById('editCategory').value;
+                const description = document.getElementById('editDescription').value;
+                const date = document.getElementById('editDate').value;
+                const amount = document.getElementById('editAmount').value;
+                const currency = document.getElementById('editCurrency').value;
+                const paidBy = document.getElementById('editPaidBy').value;
+                
+                // Get selected participants
+                const checkboxes = document.querySelectorAll('#editParticipantsContainer input[type="checkbox"]:checked');
+                const selectedParticipants = Array.from(checkboxes).map(cb => cb.value);
+                
+                // Validation
+                if (!description) {
+                    showAlert('Please enter a description', 'error');
+                    return;
+                }
+                if (!amount || parseFloat(amount) <= 0) {
+                    showAlert('Please enter a valid amount', 'error');
+                    return;
+                }
+                if (selectedParticipants.length === 0) {
+                    showAlert('Please select at least one participant', 'error');
+                    return;
+                }
+                
+                // Update expense
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'updateExpense',
+                        expenseId: currentExpenseId,
+                        category: category,
+                        description: description,
+                        date: date,
+                        amount: parseFloat(amount),
+                        currency: currency,
+                        paidBy: paidBy,
+                        participants: selectedParticipants
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('✅ Expense updated successfully!', 'success');
+                    
+                    // Update current expense data
+                    currentExpenseData = result.expense;
+                    
+                    // Refresh summary data
+                    if (currentTab === 'summary') {
+                        await loadSummaryData();
+                    }
+                    
+                    // Close edit mode and update display
+                    cancelEditMode();
+                    // Refresh displayed data
+                    showExpenseDetail(currentExpenseData);
+                    
+                } else {
+                    showAlert('Error: ' + (result.error || 'Unknown error'), 'error');
+                }
+                
+            } catch (error) {
+                showAlert('Network error. Please try again.', 'error');
+            }
+        }
+        
+        function confirmDeleteExpense() {
+            const description = currentExpenseData.description;
+            const amount = currentExpenseData.amount;
+            const currency = currentExpenseData.currency;
+            
+            document.getElementById('deleteConfirmMessage').innerHTML = `
+                Are you sure you want to delete this expense?<br><br>
+                <strong>${description}</strong><br>
+                ${amount} ${currency}<br><br>
+                This action cannot be undone.
+            `;
+            
+            document.getElementById('confirmDeleteModal').classList.add('active');
+        }
+        
+        function closeConfirmModal() {
+            document.getElementById('confirmDeleteModal').classList.remove('active');
+        }
+        
+        async function deleteExpense() {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'deleteExpense',
+                        expenseId: currentExpenseId
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('✅ Expense deleted successfully!', 'success');
+                    
+                    // Close modals
+                    closeConfirmModal();
+                    closeExpenseModal();
+                    
+                    // Refresh summary data
+                    if (currentTab === 'summary') {
+                        await loadSummaryData();
+                    }
+                    
+                } else {
+                    showAlert('Error: ' + (result.error || 'Unknown error'), 'error');
+                    closeConfirmModal();
+                }
+                
+            } catch (error) {
+                showAlert('Network error. Please try again.', 'error');
+                closeConfirmModal();
+            }
+        }
         
         // ========== HELPER FUNCTIONS ==========
         function showAlert(message, type) {
@@ -1218,9 +1576,6 @@
             if (!dateString) return '-';
             try {
                 const date = new Date(dateString);
-                if (isNaN(date.getTime())) {
-                    return dateString;
-                }
                 return date.toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'short',
@@ -1269,98 +1624,6 @@
             @keyframes slideOut {
                 from { transform: translateX(-50%) translateY(0); opacity: 1; }
                 to { transform: translateX(-50%) translateY(-100%); opacity: 0; }
-            }
-            
-            /* Form styles */
-            .input-group { margin: 15px 0; }
-            .input-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
-            .input-group input, .input-group select { 
-                width: 100%; 
-                padding: 12px; 
-                border: 2px solid #e0e0e0; 
-                border-radius: 8px; 
-                font-size: 16px; 
-            }
-            .input-group input:focus, .input-group select:focus { 
-                border-color: #667eea; 
-                outline: none; 
-                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); 
-            }
-            
-            /* Participants grid */
-            .participants-grid { 
-                display: grid; 
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
-                gap: 8px; 
-                margin: 10px 0; 
-            }
-            .participant-checkbox { 
-                display: flex; 
-                align-items: center; 
-                padding: 8px; 
-                background: #f5f5f5; 
-                border-radius: 6px; 
-                cursor: pointer; 
-            }
-            .participant-checkbox input { 
-                width: auto; 
-                margin-right: 8px; 
-            }
-            
-            /* Expense modal styles */
-            .expense-modal {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0,0,0,0.7);
-                z-index: 1000;
-                overflow-y: auto;
-            }
-            
-            .expense-modal.active {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 20px;
-            }
-            
-            .expense-modal-content {
-                background: white;
-                border-radius: 15px;
-                padding: 25px;
-                width: 100%;
-                max-width: 500px;
-                max-height: 90vh;
-                overflow-y: auto;
-            }
-            
-            /* Confirm modal styles */
-            .confirm-modal {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0,0,0,0.7);
-                z-index: 1100;
-            }
-            
-            .confirm-modal.active {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            
-            .confirm-content {
-                background: white;
-                border-radius: 15px;
-                padding: 30px;
-                max-width: 400px;
-                text-align: center;
             }
         `;
         document.head.appendChild(style);
