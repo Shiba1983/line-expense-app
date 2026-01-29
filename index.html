@@ -825,8 +825,8 @@
                                 <td style="max-width: 120px; overflow: hidden; text-overflow: ellipsis; font-size: 11px;">${participants}</td>
                                 <td>
                                     <div class="action-buttons">
-                                        <button class="btn-edit" onclick="openEditModal(${expense.row})">Edit</button>
-                                        <button class="btn-delete" onclick="deleteExpense(${expense.row})">Delete</button>
+                                        <button class="btn-edit" onclick="openEditModal(${expense.row})">✏️ Edit</button>
+                                        <button class="btn-delete" onclick="deleteExpense(${expense.row})">🗑️ Delete</button>
                                     </div>
                                 </td>
                             </tr>
@@ -994,13 +994,31 @@
                 participants: selectedParticipants
             };
             
+            console.log('Sending update request:', expenseData);
+            
             try {
                 const response = await fetch(EXPENSE_API_URL, {
                     method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify(expenseData)
                 });
                 
-                const result = await response.json();
+                console.log('Response status:', response.status);
+                
+                const text = await response.text();
+                console.log('Response text:', text);
+                
+                let result;
+                try {
+                    result = JSON.parse(text);
+                } catch (e) {
+                    console.error('Failed to parse response:', e);
+                    throw new Error('Invalid response from server: ' + text.substring(0, 100));
+                }
+                
+                console.log('Parsed result:', result);
                 
                 if (result.success) {
                     showAlert('✅ Expense updated successfully!', 'success');
@@ -1009,10 +1027,11 @@
                     // Refresh summary
                     setTimeout(() => loadSummaryData(), 1000);
                 } else {
-                    showAlert('Error: ' + (result.error || 'Unknown error'), 'error');
+                    throw new Error(result.error || 'Unknown error');
                 }
             } catch (error) {
-                showAlert('Network error. Please try again.', 'error');
+                console.error('Update error:', error);
+                showAlert('Error: ' + error.message, 'error');
             }
         }
         
@@ -1021,16 +1040,36 @@
                 return;
             }
             
+            const expenseData = {
+                action: 'deleteExpense',
+                row: row
+            };
+            
+            console.log('Sending delete request:', expenseData);
+            
             try {
                 const response = await fetch(EXPENSE_API_URL, {
                     method: 'POST',
-                    body: JSON.stringify({
-                        action: 'deleteExpense',
-                        row: row
-                    })
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(expenseData)
                 });
                 
-                const result = await response.json();
+                console.log('Response status:', response.status);
+                
+                const text = await response.text();
+                console.log('Response text:', text);
+                
+                let result;
+                try {
+                    result = JSON.parse(text);
+                } catch (e) {
+                    console.error('Failed to parse response:', e);
+                    throw new Error('Invalid response from server: ' + text.substring(0, 100));
+                }
+                
+                console.log('Parsed result:', result);
                 
                 if (result.success) {
                     showAlert('✅ Expense deleted successfully!', 'success');
@@ -1038,10 +1077,11 @@
                     // Refresh summary
                     setTimeout(() => loadSummaryData(), 1000);
                 } else {
-                    showAlert('Error: ' + (result.error || 'Unknown error'), 'error');
+                    throw new Error(result.error || 'Unknown error');
                 }
             } catch (error) {
-                showAlert('Network error. Please try again.', 'error');
+                console.error('Delete error:', error);
+                showAlert('Error: ' + error.message, 'error');
             }
         }
         
