@@ -80,7 +80,7 @@
         /* Expense Table */
         .expense-table {
             width: 100%;
-            min-width: 700px;
+            min-width: 600px;
             border-collapse: collapse;
             margin-top: 10px;
             table-layout: auto;
@@ -105,29 +105,37 @@
             background: #f9f9f9;
         }
         
-        /* Action Buttons in Table */
-        .action-buttons {
-            display: flex;
-            gap: 5px;
-        }
-        .btn-edit, .btn-delete {
-            padding: 5px 10px;
+        /* Action Buttons */
+        .btn-view, .btn-edit, .btn-delete {
+            padding: 6px 12px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: bold;
+            transition: all 0.2s;
         }
-        .btn-edit {
+        .btn-view {
             background: #667eea;
             color: white;
+            width: 100%;
+        }
+        .btn-view:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+        }
+        .btn-edit {
+            background: #28a745;
+            color: white;
+            flex: 1;
         }
         .btn-delete {
             background: #dc3545;
             color: white;
+            flex: 1;
         }
         .btn-edit:hover {
-            background: #5568d3;
+            background: #218838;
         }
         .btn-delete:hover {
             background: #c82333;
@@ -323,33 +331,111 @@
             padding: 25px;
         }
         
+        /* Detail View Styles */
+        .detail-section {
+            margin-bottom: 20px;
+        }
+        .detail-row {
+            display: flex;
+            align-items: flex-start;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            transition: all 0.2s;
+        }
+        .detail-row:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        .detail-row.highlight {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-left: 4px solid #28a745;
+        }
+        .detail-icon {
+            font-size: 24px;
+            margin-right: 15px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .detail-content {
+            flex: 1;
+        }
+        .detail-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        .detail-value {
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+        }
+        .detail-value-large {
+            font-size: 24px;
+            color: #28a745;
+            font-weight: bold;
+        }
+        .detail-value-small {
+            font-size: 13px;
+            color: #666;
+        }
+        .detail-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
         /* Responsive Styles */
         @media (max-width: 480px) {
             .expense-table {
                 display: table;
-                font-size: 11px;
+                font-size: 12px;
+                min-width: 100%;
             }
             
             .expense-table th,
             .expense-table td {
-                padding: 8px 4px;
-                font-size: 11px;
+                padding: 10px 6px;
+                font-size: 12px;
             }
             
             .expense-table th:nth-child(2),
             .expense-table td:nth-child(2) {
-                max-width: 80px;
-                overflow: hidden;
-                text-overflow: ellipsis;
+                max-width: 120px;
             }
             
             .stats-container {
                 grid-template-columns: 1fr;
             }
             
-            .btn-edit, .btn-delete {
-                padding: 4px 8px;
-                font-size: 10px;
+            .btn-view {
+                padding: 5px 10px;
+                font-size: 11px;
+            }
+            
+            .detail-row {
+                padding: 12px;
+            }
+            
+            .detail-icon {
+                font-size: 20px;
+                width: 35px;
+                height: 35px;
+            }
+            
+            .detail-value-large {
+                font-size: 20px;
             }
         }
         
@@ -600,6 +686,89 @@
         </div>
     </div>
 
+    <!-- DETAIL VIEW MODAL -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <h2>📋 Expense Details</h2>
+                <button class="modal-close" onclick="closeDetailModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-section">
+                    <div class="detail-row">
+                        <div class="detail-icon">💰</div>
+                        <div class="detail-content">
+                            <div class="detail-label">Category</div>
+                            <div class="detail-value" id="detailCategory">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-row">
+                        <div class="detail-icon">📝</div>
+                        <div class="detail-content">
+                            <div class="detail-label">Description</div>
+                            <div class="detail-value" id="detailDescription">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-row">
+                        <div class="detail-icon">📅</div>
+                        <div class="detail-content">
+                            <div class="detail-label">Date</div>
+                            <div class="detail-value" id="detailDate">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-row highlight">
+                        <div class="detail-icon">💸</div>
+                        <div class="detail-content">
+                            <div class="detail-label">Amount</div>
+                            <div class="detail-value-large" id="detailAmount">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-row">
+                        <div class="detail-icon">👤</div>
+                        <div class="detail-content">
+                            <div class="detail-label">Paid By</div>
+                            <div class="detail-value" id="detailPaidBy">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-row">
+                        <div class="detail-icon">👥</div>
+                        <div class="detail-content">
+                            <div class="detail-label">Split Between</div>
+                            <div class="detail-value" id="detailParticipants">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-row">
+                        <div class="detail-icon">🕐</div>
+                        <div class="detail-content">
+                            <div class="detail-label">Created At</div>
+                            <div class="detail-value-small" id="detailTimestamp">-</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-actions">
+                    <button onclick="editFromDetail()" class="action-button" style="background: #28a745;">
+                        ✏️ Edit Expense
+                    </button>
+                    
+                    <button onclick="deleteFromDetail()" class="action-button" style="background: #dc3545;">
+                        🗑️ Delete Expense
+                    </button>
+                    
+                    <button onclick="closeDetailModal()" class="action-button" style="background: #6c757d;">
+                        ✖️ Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ========== CONFIGURATION ==========
         const EXPENSE_API_URL = 'https://script.google.com/macros/s/AKfycbyuXL-EqGENNv7zc8o6yvEn9XJZHXoc5z2nkWnFCHdbHembGFxHUWKMtmjbKgHu4MA/exec';
@@ -798,10 +967,8 @@
                                         <th>Date</th>
                                         <th>Description</th>
                                         <th>Amount</th>
-                                        <th>Currency</th>
                                         <th>Paid By</th>
-                                        <th>Participants</th>
-                                        <th>Actions</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -813,21 +980,17 @@
                         const amount = String(expense.amount || '');
                         const currency = String(expense.currency || '');
                         const paidBy = String(expense.paidBy || '');
-                        const participants = String(expense.participants || '');
                         
                         tableHTML += `
-                            <tr>
+                            <tr style="cursor: pointer;">
                                 <td style="white-space: nowrap;">${date}</td>
-                                <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">${description}</td>
-                                <td style="text-align: right; white-space: nowrap;">${amount}</td>
-                                <td style="text-align: center;">${currency}</td>
+                                <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">${description}</td>
+                                <td style="text-align: right; white-space: nowrap;">${currency} ${amount}</td>
                                 <td>${paidBy}</td>
-                                <td style="max-width: 120px; overflow: hidden; text-overflow: ellipsis; font-size: 11px;">${participants}</td>
                                 <td>
-                                    <div class="action-buttons">
-                                        <button class="btn-edit" onclick="openEditModal(${expense.row})">✏️ Edit</button>
-                                        <button class="btn-delete" onclick="deleteExpense(${expense.row})">🗑️ Delete</button>
-                                    </div>
+                                    <button class="btn-view" onclick="openDetailModal(${expense.row})">
+                                        👁️ View
+                                    </button>
                                 </td>
                             </tr>
                         `;
@@ -915,7 +1078,9 @@
         }
         
         // ========== EDIT EXPENSE FUNCTIONS ==========
-        async function openEditModal(row) {
+        let currentExpenseData = null; // Store current expense data globally
+        
+        async function openDetailModal(row) {
             try {
                 // Load expense data
                 const response = await fetch(`${EXPENSE_API_URL}?action=getExpense&row=${row}&t=${Date.now()}`);
@@ -926,7 +1091,70 @@
                 }
                 
                 const expense = data.expense;
+                currentExpenseData = expense; // Store for edit/delete
                 
+                // Populate detail view
+                document.getElementById('detailCategory').textContent = expense.category;
+                document.getElementById('detailDescription').textContent = expense.description;
+                document.getElementById('detailDate').textContent = formatDate(expense.date);
+                document.getElementById('detailAmount').textContent = `${expense.currency} ${expense.amount}`;
+                document.getElementById('detailPaidBy').textContent = expense.paidBy;
+                document.getElementById('detailParticipants').textContent = expense.participants;
+                document.getElementById('detailTimestamp').textContent = formatDateTime(expense.timestamp);
+                
+                // Add category emoji
+                const categoryEmojis = {
+                    'Food': '🍔',
+                    'Transport': '🚗',
+                    'Accommodation': '🏨',
+                    'Activities': '🎡',
+                    'Shopping': '🛍️',
+                    'Alcohol': '🍺',
+                    'Other': '📝'
+                };
+                const categoryText = `${categoryEmojis[expense.category] || '📝'} ${expense.category}`;
+                document.getElementById('detailCategory').textContent = categoryText;
+                
+                // Show modal
+                document.getElementById('detailModal').classList.add('active');
+                
+            } catch (error) {
+                console.error('Error opening detail modal:', error);
+                showAlert('Error loading expense: ' + error.message, 'error');
+            }
+        }
+        
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.remove('active');
+            currentExpenseData = null;
+        }
+        
+        function editFromDetail() {
+            if (!currentExpenseData) return;
+            
+            // Close detail modal
+            closeDetailModal();
+            
+            // Open edit modal with the same data
+            openEditModalWithData(currentExpenseData);
+        }
+        
+        async function deleteFromDetail() {
+            if (!currentExpenseData) return;
+            
+            if (!confirm(`Are you sure you want to delete this expense?\n\n${currentExpenseData.description}\n${currentExpenseData.currency} ${currentExpenseData.amount}`)) {
+                return;
+            }
+            
+            // Close detail modal
+            closeDetailModal();
+            
+            // Delete expense
+            await deleteExpense(currentExpenseData.row);
+        }
+        
+        async function openEditModalWithData(expense) {
+            try {
                 // Populate edit form
                 document.getElementById('editRow').value = expense.row;
                 document.getElementById('editCategory').value = expense.category;
@@ -944,6 +1172,25 @@
                 
                 // Show modal
                 document.getElementById('editModal').classList.add('active');
+                
+            } catch (error) {
+                console.error('Error opening edit modal:', error);
+                showAlert('Error loading expense: ' + error.message, 'error');
+            }
+        }
+        
+        async function openEditModal(row) {
+            try {
+                // Load expense data
+                const response = await fetch(`${EXPENSE_API_URL}?action=getExpense&row=${row}&t=${Date.now()}`);
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to load expense');
+                }
+                
+                const expense = data.expense;
+                await openEditModalWithData(expense);
                 
             } catch (error) {
                 console.error('Error opening edit modal:', error);
@@ -1332,6 +1579,26 @@
             }
         }
         
+        function formatDateTime(dateValue) {
+            if (!dateValue) return '';
+            
+            try {
+                const date = new Date(dateValue);
+                if (isNaN(date.getTime())) {
+                    return String(dateValue);
+                }
+                return date.toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (e) {
+                return String(dateValue);
+            }
+        }
+        
         function formatDateForInput(dateValue) {
             if (!dateValue) return '';
             
@@ -1358,9 +1625,14 @@
         
         // Close modal when clicking outside
         window.onclick = function(event) {
-            const modal = document.getElementById('editModal');
-            if (event.target == modal) {
+            const editModal = document.getElementById('editModal');
+            const detailModal = document.getElementById('detailModal');
+            
+            if (event.target == editModal) {
                 closeEditModal();
+            }
+            if (event.target == detailModal) {
+                closeDetailModal();
             }
         }
         
